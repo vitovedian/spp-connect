@@ -19,6 +19,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('forms/surat-tugas', function () {
         return Inertia::render('spp/forms/surat-tugas');
     })->name('forms.surat-tugas');
+
+    Route::get('forms/surat-tugas/{id}/preview', function (string $id) {
+        return Inertia::render('spp/forms/surat-tugas-preview', [
+            'id' => $id,
+        ]);
+    })->name('forms.surat-tugas.preview');
 });
 
 require __DIR__.'/settings.php';
