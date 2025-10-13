@@ -21,6 +21,7 @@
         "prettier": "^3.4.2",
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-tailwindcss": "^0.6.11",
+        "puppeteer": "^24.24.0",
         "typescript-eslint": "^8.23.0"
     },
     "dependencies": {
@@ -49,6 +50,7 @@
         "globals": "^15.14.0",
         "input-otp": "^1.4.2",
         "laravel-vite-plugin": "^2.0",
+        "lodash": "^4.17.21",
         "lucide-react": "^0.475.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",

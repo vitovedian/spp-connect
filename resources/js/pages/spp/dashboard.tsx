@@ -4,17 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Users, DollarSign, FileText, Activity } from 'lucide-react';
 
-interface DashboardProps {
-    auth: {
-        user: {
-            id: number;
-            name: string;
-            email: string;
-        };
-    };
-}
-
-export default function Dashboard({ auth }: DashboardProps) {
+export default function Dashboard() {
     // Mock data for dashboard statistics
     const stats = [
         {

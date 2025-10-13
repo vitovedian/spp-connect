@@ -1,132 +1,181 @@
-import { Head } from '@inertiajs/react';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { useMemo, useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    calculateTotalFee,
-    formatCurrency,
-    formatDate,
-    formatLetterNumber,
-    formatTime,
-    suratTugasRequests,
-    statusVariantMap,
-} from '@/lib/surat-tugas';
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
-interface SuratTugasPreviewProps {
+interface RecordMeta {
     id: string;
+    letterNumber: string;
+    activityName: string;
+    status: string;
+    statusNote?: string | null;
+    submittedAt: string;
+    createdBy: string;
+    clientName?: string | null;
+    pics: {
+        id: string;
+        name: string;
+        role?: string | null;
+        missing: string[];
+    }[];
 }
 
-export default function SuratTugasPreview({ id }: SuratTugasPreviewProps) {
-    const record = suratTugasRequests.find((item) => item.id === id);
+interface SuratTugasPreviewProps {
+    pdfUrl: string;
+    backUrl: string;
+    record: RecordMeta;
+}
 
+export default function SuratTugasPreview({ pdfUrl, backUrl, record }: SuratTugasPreviewProps) {
+    const [selectedPicId, setSelectedPicId] = useState(record.pics[0]?.id ?? '');
+
+    const currentPic = useMemo(
+        () => record.pics.find((pic) => pic.id === selectedPicId) ?? record.pics[0],
+        [record.pics, selectedPicId],
+    );
+
+    const previewUrl = useMemo(() => {
+        if (!currentPic) {
+            return pdfUrl;
+        }
+
+        const [base, queryString] = pdfUrl.split('?');
+        const params = new URLSearchParams(queryString ?? '');
+        params.set('pic', currentPic.id);
+
+        return `${base}?${params.toString()}`;
+    }, [pdfUrl, currentPic]);
+
+    const downloadUrl = useMemo(() => {
+        const [base, queryString] = previewUrl.split('?');
+        const params = new URLSearchParams(queryString ?? '');
+        params.set('download', '1');
+
+        return `${base}?${params.toString()}`;
+    }, [previewUrl]);
     return (
-        <div className="min-h-screen bg-muted/20 py-10">
-            <Head title={`Preview PDF ${record ? record.activityName : ''}`} />
-            <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6">
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold tracking-tight">Pratinjau Surat Tugas</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Halaman ini merupakan placeholder untuk pratinjau PDF sebelum dicetak.
-                    </p>
+        <div className="min-h-screen bg-background">
+            <Head title={`Pratinjau ${record.letterNumber}`} />
+
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={backUrl}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Kembali
+                            </Link>
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-semibold leading-tight">Pratinjau Surat Tugas</h1>
+                            <p className="text-sm text-muted-foreground">
+                                Nomor: <span className="font-medium text-foreground">{record.letterNumber}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Badge>{record.status}</Badge>
+                        <Button variant="outline" size="sm" asChild>
+                            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
+                                <Download className="mr-2 h-4 w-4" /> Unduh PDF
+                            </a>
+                        </Button>
+                    </div>
                 </div>
 
-                {!record ? (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Data tidak ditemukan</CardTitle>
-                            <CardDescription>
-                                Pastikan Anda membuka pratinjau dari daftar Surat Tugas yang tersedia.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                ) : (
-                    <>
-                        <Card>
-                            <CardHeader className="flex flex-col gap-2">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div>
-                                        <CardTitle className="text-2xl">{formatLetterNumber(record)}</CardTitle>
-                                        <CardDescription>
-                                            Dibuat pada {formatDate(record.submittedAt)} pukul {formatTime(record.submittedAt)}
-                                        </CardDescription>
-                                    </div>
-                                    <Badge variant={statusVariantMap[record.status] ?? 'outline'}>{record.status}</Badge>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div>
-                                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                            Nama Kegiatan
-                                        </h2>
-                                        <p className="text-lg font-medium">{record.activityName}</p>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                            Penanggung Jawab
-                                        </h2>
-                                        <p className="text-lg font-medium">{record.pic}</p>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                            Periode Kegiatan
-                                        </h2>
-                                        <p>
-                                            {formatDate(record.eventStart)} - {formatDate(record.eventEnd)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                            Pendamping
-                                        </h2>
-                                        <p>{record.companionName ?? 'Belum ditentukan'}</p>
-                                    </div>
-                                </div>
+                {record.pics.length > 0 ? (
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                        <p className="text-sm text-muted-foreground">Pilih PIC untuk pratinjau:</p>
+                        <Select value={selectedPicId} onValueChange={setSelectedPicId}>
+                            <SelectTrigger className="w-[240px]">
+                                <SelectValue placeholder="Pilih PIC" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {record.pics.map((pic) => (
+                                    <SelectItem key={pic.id} value={pic.id}>
+                                        {pic.name}
+                                        {pic.role ? ` — ${pic.role}` : ''}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                ) : null}
 
-                                <div>
-                                    <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                        Instruktur
-                                    </h2>
-                                    <div className="mt-2 divide-y divide-border rounded-md border">
-                                    {record.instructors.map((instructor) => (
-                                        <div
-                                            key={`${record.id}-${instructor.name}`}
-                                            className="flex items-center justify-between px-4 py-3 text-sm"
-                                        >
-                                            <span className="font-medium">{instructor.name}</span>
-                                            <span className="text-muted-foreground">
-                                                {formatCurrency(instructor.fee)}
-                                            </span>
-                                        </div>
-                                    ))}
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Rangkuman</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-3 text-sm md:grid-cols-2">
+                        <div>
+                            <p className="text-muted-foreground">Nama Kegiatan</p>
+                            <p className="font-medium">{record.activityName}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground">Dibuat Oleh</p>
+                            <p className="font-medium">{record.createdBy}</p>
+                        </div>
+                        {record.clientName ? (
+                            <div>
+                                <p className="text-muted-foreground">Klien</p>
+                                <p className="font-medium">{record.clientName}</p>
+                            </div>
+                        ) : null}
+                        <div>
+                            <p className="text-muted-foreground">Tanggal Pengajuan</p>
+                            <p className="font-medium">{record.submittedAt}</p>
+                        </div>
+                        {currentPic ? (
+                            <div>
+                                <p className="text-muted-foreground">PIC Dipilih</p>
+                                <p className="font-medium">{currentPic.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {currentPic.role ?? 'Peran belum diisi'}
+                                </p>
+                                {currentPic.missing.length > 0 ? (
+                                    <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
+                                        <p className="font-medium">Data belum lengkap:</p>
+                                        <ul className="list-disc pl-4">
+                                            {currentPic.missing.map((item) => (
+                                                <li key={item}>{item}</li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+                        {record.statusNote ? (
+                            <div className="md:col-span-2">
+                                <p className="text-muted-foreground">Catatan</p>
+                                <p className="font-medium">{record.statusNote}</p>
+                            </div>
+                        ) : null}
+                    </CardContent>
+                </Card>
 
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                                        Total Biaya
-                                    </span>
-                                    <span className="text-xl font-bold">
-                                        {formatCurrency(calculateTotalFee(record))}
-                                    </span>
-                                </div>
+                <div className="flex-1 overflow-hidden rounded-lg border bg-muted">
+                    <iframe
+                        title={`Pratinjau ${record.letterNumber}`}
+                        src={previewUrl}
+                        className="h-[75vh] w-full"
+                        allow="fullscreen"
+                    />
+                </div>
 
-                                <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/30 p-4 text-sm text-muted-foreground">
-                                    <p className="font-semibold text-foreground">Catatan Placeholder</p>
-                                    <p>
-                                        Template resmi PDF akan dimuat di halaman ini. Gunakan bagian ini untuk memeriksa
-                                        data yang akan dicetak sebelum nomor surat diterbitkan.
-                                    </p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </>
-                )}
+                <p className="text-xs text-muted-foreground">
+                    Jika PDF tidak muncul, pastikan browser mengizinkan tampilan PDF tersemat dan coba unduh berkas
+                    melalui tombol "Unduh PDF" di atas.
+                </p>
             </div>
         </div>
     );

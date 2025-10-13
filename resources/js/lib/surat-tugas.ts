@@ -2,11 +2,16 @@ export const suratTugasRequests = [
     {
         id: 'ST-2025-001',
         submittedAt: '2025-01-12T08:30:00+07:00',
+        letterNumber: '001/SPP-ST/I/2025',
         eventStart: '2025-01-18',
         eventEnd: '2025-01-20',
         activityName: 'Pendampingan Transparansi Data Pemerintah Kota',
         activityType: 'offline',
-        pic: 'Unit Transformasi Digital',
+        clientName: 'Bank Mandiri',
+        pics: [
+            { id: 'rahmat-hidayat', name: 'Rahmat Hidayat', role: 'Lead PIC' },
+            { id: 'mira-puspita', name: 'Mira Puspita', role: 'Koordinator Lapangan' },
+        ],
         companionName: 'Dewi Lestari',
         companionFee: 1250000,
         instructors: [
@@ -22,11 +27,16 @@ export const suratTugasRequests = [
     {
         id: 'ST-2025-002',
         submittedAt: '2025-01-09T14:15:00+07:00',
+        letterNumber: '002/SPP-ST/I/2025',
         eventStart: '2025-01-22',
         eventEnd: '2025-01-22',
         activityName: 'Sosialisasi Layanan SPP Online',
         activityType: 'online',
-        pic: 'Bidang Layanan Publik',
+        clientName: 'Bank Syariah Indonesia',
+        pics: [
+            { id: 'sari-wulandari', name: 'Sari Wulandari', role: 'PIC Utama' },
+            { id: 'ario-nugroho', name: 'Ario Nugroho', role: 'Moderator Webinar' },
+        ],
         companionName: 'Ridwan Pratama',
         companionFee: 0,
         instructors: [
@@ -41,11 +51,13 @@ export const suratTugasRequests = [
     {
         id: 'ST-2025-003',
         submittedAt: '2025-01-05T09:45:00+07:00',
+        letterNumber: '003/SPP-ST/I/2025',
         eventStart: '2025-01-25',
         eventEnd: '2025-01-27',
         activityName: 'Workshop Transformasi Digital Regional',
         activityType: 'offline',
-        pic: 'Tim Koordinasi Wilayah',
+        clientName: 'Bank Negara Indonesia',
+        pics: [{ id: 'rangga-saputra', name: 'Rangga Saputra', role: null }],
         companionName: null,
         companionFee: null,
         instructors: [

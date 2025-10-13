@@ -60,26 +60,29 @@ export default function SuratTugas() {
         const term = searchTerm.trim().toLowerCase();
 
         const filtered = suratTugasRequests.filter((request) => {
-            if (!term) {
-                return (
-                    statusFilter === 'semua' ||
-                    request.status === statusFilterMap[statusFilter as keyof typeof statusFilterMap]
-                );
-            }
-
-            const haystacks = [
-                formatLetterNumber(request).toLowerCase(),
-                request.activityName.toLowerCase(),
-                request.status.toLowerCase(),
-                request.pic.toLowerCase(),
-            ];
-
-            const matchesSearch = haystacks.some((value) => value.includes(term));
             const matchesStatus =
                 statusFilter === 'semua' ||
                 request.status === statusFilterMap[statusFilter as keyof typeof statusFilterMap];
 
-            return matchesSearch && matchesStatus;
+            if (!matchesStatus) {
+                return false;
+            }
+
+            if (!term) {
+                return true;
+            }
+
+            const haystacks = [
+                (request.letterNumber ?? formatLetterNumber(request)).toLowerCase(),
+                request.activityName.toLowerCase(),
+                request.status.toLowerCase(),
+                request.createdBy.toLowerCase(),
+                request.pics
+                    .map((pic) => [pic.name, pic.role].filter(Boolean).join(' ').toLowerCase())
+                    .join(' '),
+            ];
+
+            return haystacks.some((value) => value.includes(term));
         });
 
         const sorted = [...filtered].sort((a, b) => {
@@ -370,7 +373,7 @@ export default function SuratTugas() {
                                         <th className="px-4 py-2">Tanggal Pengajuan</th>
                                         <th className="px-4 py-2">Periode Kegiatan</th>
                                         <th className="px-4 py-2">Nama Kegiatan</th>
-                                        <th className="px-4 py-2">Dibuat Oleh</th>
+                                        <th className="px-4 py-2">PIC</th>
                                         <th className="px-4 py-2">Status Permohonan</th>
                                         <th className="px-4 py-2">Total Fee</th>
                                         <th className="px-4 py-2 text-right">Aksi</th>
@@ -389,7 +392,7 @@ export default function SuratTugas() {
                                                 key={request.id}
                                                 className="rounded-lg bg-muted/30 text-foreground shadow-sm transition hover:bg-muted/50"
                                             >
-                                            <td className="px-4 py-3 font-medium">{formatLetterNumber(request)}</td>
+                                            <td className="px-4 py-3 font-medium">{request.letterNumber ?? formatLetterNumber(request)}</td>
                                             <td className="px-4 py-3" title={formatTime(request.submittedAt)}>
                                                 <div className="flex flex-col">
                                                     <span>{formatDate(request.submittedAt)}</span>
@@ -403,7 +406,18 @@ export default function SuratTugas() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 font-medium">{request.activityName}</td>
-                                            <td className="px-4 py-3">{request.createdBy}</td>
+                                            <td className="px-4 py-3 text-sm">
+                                                <div className="space-y-1">
+                                            {request.pics.map((pic) => (
+                                                <div key={`${request.id}-${pic.id}`} className="space-y-1 border-b border-border/40 pb-2 last:border-b-0 last:pb-0">
+                                                    <span className="font-medium text-foreground">{pic.name}</span>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {pic.role ?? 'Peran belum diisi'}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col gap-1">
                                                     <Badge variant={statusVariantMap[request.status] ?? 'outline'}>
@@ -488,7 +502,7 @@ export default function SuratTugas() {
 
                         <div className="flex-1 overflow-y-auto pr-1">
                             {detailRequest ? (
-                                <div className="space-y-6">
+                    <div className="space-y-6">
                                     <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Nomor Surat</p>
@@ -526,6 +540,12 @@ export default function SuratTugas() {
                                         <p className="text-xs text-muted-foreground">Nama Kegiatan</p>
                                         <p className="font-semibold">{detailRequest.activityName}</p>
                                     </div>
+                                    {detailRequest.clientName ? (
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-muted-foreground">Klien</p>
+                                            <p className="font-semibold">{detailRequest.clientName}</p>
+                                        </div>
+                                    ) : null}
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Jenis Kegiatan</p>
                                         <Badge variant={detailRequest.activityType === 'online' ? 'secondary' : 'default'}>
@@ -534,7 +554,16 @@ export default function SuratTugas() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">PIC</p>
-                                        <p className="font-semibold">{detailRequest.pic}</p>
+                                        <div className="space-y-1">
+                                            {detailRequest.pics.map((pic) => (
+                                                <div key={`${detailRequest.id}-${pic.id}`} className="rounded-md border border-border/60 p-2">
+                                                    <span className="font-semibold">{pic.name}</span>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {pic.role ?? 'Peran belum diisi'}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Pendamping</p>

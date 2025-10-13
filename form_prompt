@@ -1,0 +1,17 @@
+form surat tugas :
+-Tanggal Pengajuan (date) (has hidden hour:minutes timestamp)
+-Tanggal Kegiatan dimulai (date)
+-Tanggal Kegiatan berakhir (date)
+-Nama Kegiatan (string)
+-Jenis Kegiatan (online/offline dropdown)
+-PIC (dropdown user role PIC)
+-Nama Pendamping (string) (optional)
+-Fee Pendamping (money in rupiah) (optional)
+-Instruktor (dynamic add):
+-Nama Instruktor (string)
+-Fee Instruktor (money in rupiah)
+-Total fee (automatic count all money in form)
+
+form nomor surat :
+-Tanggal pengajuan (date)
+-Tujuan Surat
