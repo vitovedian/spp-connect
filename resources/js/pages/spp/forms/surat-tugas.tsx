@@ -47,6 +47,9 @@ const suratTugasRequests = [
         ],
         status: 'Menunggu Persetujuan',
         statusNote: 'Menunggu tanda tangan Kepala Bagian.',
+        createdBy: 'Rahmat Hidayat',
+        statusUpdatedBy: 'Putri Saraswati',
+        statusUpdatedAt: '2025-01-13T10:05:00+07:00',
     },
     {
         id: 'ST-2025-002',
@@ -63,6 +66,9 @@ const suratTugasRequests = [
         ],
         status: 'Disetujui',
         statusNote: 'Surat telah disahkan oleh pimpinan.',
+        createdBy: 'Sari Wulandari',
+        statusUpdatedBy: 'Budi Hartono',
+        statusUpdatedAt: '2025-01-10T09:20:00+07:00',
     },
     {
         id: 'ST-2025-003',
@@ -81,6 +87,9 @@ const suratTugasRequests = [
         ],
         status: 'Revisi',
         statusNote: 'Lengkapi daftar peserta dan agenda final.',
+        createdBy: 'Rangga Saputra',
+        statusUpdatedBy: 'Nur Aisyah',
+        statusUpdatedAt: '2025-01-08T16:40:00+07:00',
     },
 ];
 
@@ -466,6 +475,7 @@ export default function SuratTugas() {
                                         <th className="px-4 py-2">Tanggal Pengajuan</th>
                                         <th className="px-4 py-2">Periode Kegiatan</th>
                                         <th className="px-4 py-2">Nama Kegiatan</th>
+                                        <th className="px-4 py-2">Dibuat Oleh</th>
                                         <th className="px-4 py-2">Status Permohonan</th>
                                         <th className="px-4 py-2">Total Fee</th>
                                         <th className="px-4 py-2 text-right">Aksi</th>
@@ -498,6 +508,7 @@ export default function SuratTugas() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3 font-medium">{request.activityName}</td>
+                                            <td className="px-4 py-3">{request.createdBy}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col gap-1">
                                                     <Badge variant={statusVariantMap[request.status] ?? 'outline'}>
@@ -584,13 +595,17 @@ export default function SuratTugas() {
                             {detailRequest ? (
                                 <div className="space-y-6">
                                     <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-1">
-                                            <p className="text-xs text-muted-foreground">Nomor Surat</p>
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground">Nomor Surat</p>
                                         <p className="font-semibold">{formatLetterNumber(detailRequest)}</p>
-                                        </div>
-                                        <div className="space-y-1">
+                                    </div>
+                                    <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">ID Permohonan</p>
                                         <p className="font-semibold">{detailRequest.id}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground">Dibuat Oleh</p>
+                                        <p className="font-semibold">{detailRequest.createdBy}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Tanggal Pengajuan</p>
@@ -642,19 +657,23 @@ export default function SuratTugas() {
                                 <div className="space-y-3">
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Status Permohonan</p>
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Badge variant={statusVariantMap[detailRequest.status] ?? 'outline'}>
-                                                {detailRequest.status}
-                                            </Badge>
-                                            <Badge variant={detailRequest.activityType === 'online' ? 'secondary' : 'default'}>
-                                                {detailRequest.activityType === 'online' ? 'Daring' : 'Luring'}
-                                            </Badge>
-                                        </div>
+                                        <Badge variant={statusVariantMap[detailRequest.status] ?? 'outline'}>
+                                            {detailRequest.status}
+                                        </Badge>
                                         {detailRequest.statusNote && (
                                             <p className="text-xs text-muted-foreground">
                                                 Catatan: {detailRequest.statusNote}
                                             </p>
                                         )}
+                                        <div className="mt-2 text-xs text-muted-foreground">
+                                            <p>
+                                                Perubahan terakhir oleh <span className="font-medium text-foreground">{detailRequest.statusUpdatedBy}</span>
+                                            </p>
+                                            <p>
+                                                pada {formatDate(detailRequest.statusUpdatedAt)}
+                                                <span className="ml-1">{formatTime(detailRequest.statusUpdatedAt)}</span>
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <div>
