@@ -22,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('spp/forms/surat-tugas');
     })->name('forms.surat-tugas');
 
+    Route::get('forms/invoice', function () {
+        return Inertia::render('spp/forms/invoice');
+    })->name('forms.invoice');
+
     Route::get('forms/surat-tugas/{id}/preview', function (string $id) {
         $record = SuratTugasRepository::find($id);
 

@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileCheck, FileSpreadsheet, FileStack, FileText, NotebookPen } from 'lucide-react';
+import { FileCheck, FileStack, FileText, NotebookPen, Receipt } from 'lucide-react';
 
 const placeholderForms = [
     {
@@ -11,9 +11,10 @@ const placeholderForms = [
         href: '/forms/surat-tugas',
     },
     {
-        title: 'Permohonan Dana',
-        description: 'Ajukan pencairan dana operasional dengan proses yang terstruktur.',
-        icon: FileSpreadsheet,
+        title: 'Invoice',
+        description: 'Kelola tagihan proyek, lacak status pembayaran, dan kirim pengingat.',
+        icon: Receipt,
+        href: '/forms/invoice',
     },
     {
         title: 'Laporan Kegiatan',
