@@ -28,7 +28,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { ArrowUpDown, FilePlus2, Plus } from 'lucide-react';
+import { ArrowUpDown, FilePlus2, Plus, Trash2 } from 'lucide-react';
 import {
     calculateTotalFee,
     formatCurrency,
@@ -47,6 +47,18 @@ const statusFilterMap: Record<Exclude<'semua' | 'menunggu' | 'disetujui' | 'revi
     revisi: 'Revisi',
 };
 
+interface InstrukturItem {
+    id: string;
+    name: string;
+    fee: string;
+}
+
+const createBlankInstruktur = (): InstrukturItem => ({
+    id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+    name: '',
+    fee: '',
+});
+
 export default function SuratTugas() {
     const [isNomorSuratOpen, setNomorSuratOpen] = useState(false);
     const [isDetailOpen, setDetailOpen] = useState(false);
@@ -55,6 +67,114 @@ export default function SuratTugas() {
     const [sortField, setSortField] = useState<'submittedAt' | 'activityName' | 'totalFee'>('submittedAt');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [statusFilter, setStatusFilter] = useState<'semua' | 'menunggu' | 'disetujui' | 'revisi'>('semua');
+
+    // State for nomor surat form
+    const [nomorSuratData, setNomorSuratData] = useState({
+        tanggalPengajuan: '',
+        pilihanBendera: '',
+        tujuanSurat: '',
+        namaKlien: '',
+        catatan: ''
+    });
+
+    // State for surat tugas form
+    const [suratTugasData, setSuratTugasData] = useState({
+        submittedAt: '',
+        eventStart: '',
+        eventEnd: '',
+        activityName: '',
+        activityType: '',
+        status: '',
+        pic: '',
+        companion: '',
+        fee: '',
+    });
+
+    // State for instruktur list
+    const [instrukturList, setInstrukturList] = useState<InstrukturItem[]>([createBlankInstruktur()]);
+
+    const benderaOptions = ['SPP', 'MBS', 'EPU', 'KIM', 'PrimaOne'];
+
+    const handleNomorSuratChange = (field: keyof typeof nomorSuratData, value: string) => {
+        setNomorSuratData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSuratTugasChange = (field: keyof typeof suratTugasData, value: string) => {
+        setSuratTugasData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleInstrukturChange = (
+        index: number,
+        field: keyof InstrukturItem,
+        value: string,
+    ) => {
+        setInstrukturList((previous) =>
+            previous.map((instruktur, instrukturIndex) =>
+                instrukturIndex === index
+                    ? {
+                          ...instruktur,
+                          [field]: value,
+                      }
+                    : instruktur,
+            ),
+        );
+    };
+
+    const handleAddInstruktur = () => {
+        setInstrukturList((previous) => [...previous, createBlankInstruktur()]);
+    };
+
+    const handleRemoveInstruktur = (id: string) => {
+        setInstrukturList((previous) => (previous.length === 1 ? previous : previous.filter((instruktur) => instruktur.id !== id)));
+    };
+
+    const instrukturTotal = useMemo(() => {
+        return instrukturList.reduce((total, instruktur) => {
+            const fee = Number(instruktur.fee) || 0;
+            return total + fee;
+        }, 0);
+    }, [instrukturList]);
+
+    const handleNomorSuratSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('Nomor Surat form submitted:', nomorSuratData);
+        alert('Nomor Surat form submitted successfully! (This is a demo)');
+        // Reset form after submission
+        setNomorSuratData({
+            tanggalPengajuan: '',
+            pilihanBendera: '',
+            tujuanSurat: '',
+            namaKlien: '',
+            catatan: ''
+        });
+        // Close dialog
+        setNomorSuratOpen(false);
+    };
+
+    const handleSuratTugasSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log('Surat Tugas form submitted:', suratTugasData, instrukturList);
+        alert('Surat Tugas form submitted successfully! (This is a demo)');
+        // Reset form after submission
+        setSuratTugasData({
+            submittedAt: '',
+            eventStart: '',
+            eventEnd: '',
+            activityName: '',
+            activityType: '',
+            status: '',
+            pic: '',
+            companion: '',
+            fee: ''
+        });
+        setInstrukturList([createBlankInstruktur()]);
+    };
 
     const visibleRequests = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
@@ -122,7 +242,7 @@ export default function SuratTugas() {
                                     Tambah Surat Tugas
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
                                 <DialogHeader>
                                     <DialogTitle>Formulir Surat Tugas</DialogTitle>
                                     <DialogDescription>
@@ -143,67 +263,134 @@ export default function SuratTugas() {
                                                     Form ini hanya contoh untuk menerbitkan nomor surat secara manual.
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <div className="space-y-4">
-                                                <div className="grid gap-2">
-                                                    <Label htmlFor="nomorSurat">Nomor Surat</Label>
-                                                    <Input
-                                                        id="nomorSurat"
-                                                        placeholder="Contoh: 001/SPP-ST/I/2025"
-                                                        disabled
-                                                    />
+                                            <form onSubmit={handleNomorSuratSubmit}>
+                                                <div className="space-y-4">
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="tanggalPengajuan">
+                                                            Tanggal Pengajuan <span className="text-destructive">*</span>
+                                                        </Label>
+                                                        <Input 
+                                                            id="tanggalPengajuan" 
+                                                            type="date" 
+                                                            value={nomorSuratData.tanggalPengajuan}
+                                                            onChange={(e) => handleNomorSuratChange('tanggalPengajuan', e.target.value)}
+                                                            required 
+                                                        />
+                                                    </div>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="pilihanBendera">
+                                                            Pilihan Bendera <span className="text-destructive">*</span>
+                                                        </Label>
+                                                        <Select 
+                                                            value={nomorSuratData.pilihanBendera} 
+                                                            onValueChange={(value) => handleNomorSuratChange('pilihanBendera', value)}
+                                                        >
+                                                            <SelectTrigger id="pilihanBendera">
+                                                                <SelectValue placeholder="Pilih bendera" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {benderaOptions.map((bendera) => (
+                                                                    <SelectItem key={bendera} value={bendera}>
+                                                                        {bendera}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="tujuanSurat">
+                                                            Tujuan Surat <span className="text-destructive">*</span>
+                                                        </Label>
+                                                        <Input
+                                                            id="tujuanSurat"
+                                                            placeholder="Contoh: Workshop Transformasi Digital"
+                                                            value={nomorSuratData.tujuanSurat}
+                                                            onChange={(e) => handleNomorSuratChange('tujuanSurat', e.target.value)}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="namaKlien">
+                                                            Nama Klien <span className="text-destructive">*</span>
+                                                        </Label>
+                                                        <Input
+                                                            id="namaKlien"
+                                                            placeholder="Contoh: PT ABC Indonesia"
+                                                            value={nomorSuratData.namaKlien}
+                                                            onChange={(e) => handleNomorSuratChange('namaKlien', e.target.value)}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="catatan">Catatan</Label>
+                                                        <textarea
+                                                            id="catatan"
+                                                            value={nomorSuratData.catatan}
+                                                            onChange={(e) => handleNomorSuratChange('catatan', e.target.value)}
+                                                            className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            placeholder="Catatan tambahan tentang surat ini..."
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div className="grid gap-2">
-                                                    <Label htmlFor="tanggalTerbit">Tanggal Terbit</Label>
-                                                    <Input id="tanggalTerbit" type="date" disabled />
-                                                </div>
-                                                <div className="grid gap-2">
-                                                    <Label htmlFor="catatanNomor">Catatan (Opsional)</Label>
-                                                    <textarea
-                                                        id="catatanNomor"
-                                                        placeholder="Catat referensi atau kebutuhan khusus penerbitan."
-                                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                        disabled
-                                                    />
-                                                </div>
-                                            </div>
-                                            <DialogFooter className="sm:justify-between">
-                                                <p className="text-xs text-muted-foreground">
-                                                    Nomor surat belum dapat disimpan pada versi demo.
-                                                </p>
-                                                <div className="flex items-center gap-2">
-                                                    <DialogClose asChild>
-                                                        <Button variant="outline">Tutup</Button>
-                                                    </DialogClose>
-                                                    <Button disabled>Simpan</Button>
-                                                </div>
-                                            </DialogFooter>
+                                                <DialogFooter className="sm:justify-between">
+                                                    <p className="text-xs text-muted-foreground mt-4">
+                                                        Nomor surat belum dapat disimpan pada versi demo.
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-4">
+                                                        <DialogClose asChild>
+                                                            <Button variant="outline">Tutup</Button>
+                                                        </DialogClose>
+                                                        <Button type="submit">Simpan</Button>
+                                                    </div>
+                                                </DialogFooter>
+                                            </form>
                                         </DialogContent>
                                     </Dialog>
                                 </div>
-                                <div className="space-y-4">
+                                <form onSubmit={handleSuratTugasSubmit}>
+                                    <div className="space-y-4">
                                         <div className="grid gap-2">
                                             <Label htmlFor="submittedAt">Tanggal Pengajuan</Label>
-                                            <Input id="submittedAt" type="date" disabled />
+                                            <Input 
+                                                id="submittedAt" 
+                                                type="date" 
+                                                value={suratTugasData.submittedAt}
+                                                onChange={(e) => handleSuratTugasChange('submittedAt', e.target.value)}
+                                            />
                                         </div>
                                         <div className="grid gap-2">
                                         <Label htmlFor="eventStart">Tanggal Kegiatan Dimulai</Label>
-                                        <Input id="eventStart" type="date" disabled />
+                                        <Input 
+                                            id="eventStart" 
+                                            type="date" 
+                                            value={suratTugasData.eventStart}
+                                            onChange={(e) => handleSuratTugasChange('eventStart', e.target.value)}
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="eventEnd">Tanggal Kegiatan Berakhir</Label>
-                                        <Input id="eventEnd" type="date" disabled />
+                                        <Input 
+                                            id="eventEnd" 
+                                            type="date" 
+                                            value={suratTugasData.eventEnd}
+                                            onChange={(e) => handleSuratTugasChange('eventEnd', e.target.value)}
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="activityName">Nama Kegiatan</Label>
                                         <Input
                                             id="activityName"
                                             placeholder="Contoh: Workshop Transformasi Digital"
-                                            disabled
+                                            value={suratTugasData.activityName}
+                                            onChange={(e) => handleSuratTugasChange('activityName', e.target.value)}
                                         />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="activityType">Jenis Kegiatan</Label>
-                                        <Select disabled>
+                                        <Select 
+                                            value={suratTugasData.activityType} 
+                                            onValueChange={(value) => handleSuratTugasChange('activityType', value)}
+                                        >
                                             <SelectTrigger id="activityType">
                                                 <SelectValue placeholder="Pilih jenis kegiatan" />
                                             </SelectTrigger>
@@ -215,7 +402,10 @@ export default function SuratTugas() {
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="status">Status Permohonan</Label>
-                                        <Select disabled>
+                                        <Select 
+                                            value={suratTugasData.status} 
+                                            onValueChange={(value) => handleSuratTugasChange('status', value)}
+                                        >
                                             <SelectTrigger id="status">
                                                 <SelectValue placeholder="Pilih status" />
                                             </SelectTrigger>
@@ -230,7 +420,10 @@ export default function SuratTugas() {
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="pic">PIC</Label>
-                                        <Select disabled>
+                                        <Select 
+                                            value={suratTugasData.pic} 
+                                            onValueChange={(value) => handleSuratTugasChange('pic', value)}
+                                        >
                                             <SelectTrigger id="pic">
                                                 <SelectValue placeholder="Pilih unit PIC" />
                                             </SelectTrigger>
@@ -246,7 +439,8 @@ export default function SuratTugas() {
                                         <Input
                                             id="companion"
                                             placeholder="Nama pendamping jika diperlukan"
-                                            disabled
+                                            value={suratTugasData.companion}
+                                            onChange={(e) => handleSuratTugasChange('companion', e.target.value)}
                                         />
                                     </div>
                                     <div className="grid gap-2">
@@ -255,49 +449,95 @@ export default function SuratTugas() {
                                             id="fee"
                                             placeholder="Contoh: 750000"
                                             type="number"
-                                            disabled
+                                            value={suratTugasData.fee}
+                                            onChange={(e) => handleSuratTugasChange('fee', e.target.value)}
                                         />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label>Instruktor</Label>
-                                        <div className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-3 text-sm">
-                                            <p className="text-xs text-muted-foreground">
-                                                Daftar instruktur akan muncul di sini setelah ditambahkan.
-                                            </p>
-                                            <div className="mt-2 space-y-2">
-                                                <div className="flex items-center justify-between rounded-md bg-background px-3 py-2 text-xs text-muted-foreground">
-                                                    <span>Nama Instruktor</span>
-                                                    <span>Fee (Rp)</span>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-sm font-medium">Daftar Instruktur</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Tambahkan instruktur yang terlibat dalam kegiatan ini.
+                                                    </p>
                                                 </div>
-                                                <div className="rounded-md bg-background px-3 py-6 text-center text-xs text-muted-foreground">
-                                                    Placeholder daftar instruktur (mode demo)
-                                                </div>
+                                                <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleAddInstruktur}>
+                                                    <Plus className="h-4 w-4" /> Tambah Instruktur
+                                                </Button>
                                             </div>
+                                            {instrukturList.map((instruktur, index) => (
+                                                <div
+                                                    key={instruktur.id}
+                                                    className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/20 p-4"
+                                                >
+                                                    <div className="grid gap-3 sm:grid-cols-[1.6fr_0.6fr_auto] sm:items-end">
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor={`instruktur-name-${instruktur.id}`}>Nama Instruktur</Label>
+                                                            <Input
+                                                                id={`instruktur-name-${instruktur.id}`}
+                                                                value={instruktur.name}
+                                                                onChange={(event) =>
+                                                                    handleInstrukturChange(index, 'name', event.target.value)
+                                                                }
+                                                                placeholder="Contoh: Agus Wibowo"
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor={`instruktur-fee-${instruktur.id}`}>Fee (Rp)</Label>
+                                                            <Input
+                                                                id={`instruktur-fee-${instruktur.id}`}
+                                                                type="number"
+                                                                min={0}
+                                                                value={instruktur.fee}
+                                                                onChange={(event) =>
+                                                                    handleInstrukturChange(index, 'fee', event.target.value)
+                                                                }
+                                                                placeholder="Contoh: 1500000"
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-end">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="text-muted-foreground hover:text-destructive"
+                                                                onClick={() => handleRemoveInstruktur(instruktur.id)}
+                                                                disabled={instrukturList.length === 1}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <p className="mt-2 text-xs text-muted-foreground">
+                                                        Fee Instruktur: <span className="font-medium text-foreground">{formatCurrency(Number(instruktur.fee) || 0)}</span>
+                                                    </p>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <Button variant="outline" className="justify-start gap-2" disabled>
-                                            <Plus className="h-4 w-4" /> Tambah Instruktor
-                                        </Button>
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="totalFee">Total Biaya (Otomatis)</Label>
                                         <Input
                                             id="totalFee"
-                                            placeholder="Akan menghitung seluruh fee"
-                                            disabled
+                                            value={formatCurrency(instrukturTotal)}
+                                            readOnly
                                         />
                                     </div>
                                 </div>
                                 <DialogFooter className="sm:justify-between">
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-xs text-muted-foreground mt-4">
                                         Mode demo: pengajuan belum aktif.
                                     </p>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 mt-4">
                                         <DialogClose asChild>
-                                            <Button variant="outline">Tutup</Button>
+                                            <Button variant="outline" type="button">Tutup</Button>
                                         </DialogClose>
-                                        <Button disabled>Kirim</Button>
+                                        <Button type="submit">Kirim</Button>
                                     </div>
                                 </DialogFooter>
+                            </form>
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -492,7 +732,7 @@ export default function SuratTugas() {
                         }
                     }}
                 >
-                    <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden p-6 flex flex-col">
+                    <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-hidden p-6 flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Detail Surat Tugas</DialogTitle>
                             <DialogDescription>

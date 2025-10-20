@@ -13,8 +13,9 @@ form surat tugas :
 -Total fee (automatic count all money in form)
 
 form nomor surat :
+make the nomor surat form into this :
 -Tanggal pengajuan (date)
--Pilihan Bendera(?)
+-Pilihan Bendera(dropdown list of bendera : placeholder data is SPP, MBS, EPU, KIM, PrimaOne)
 -Tujuan Surat (string)
 -Nama Klien (string)
 -Catatan (long string)
