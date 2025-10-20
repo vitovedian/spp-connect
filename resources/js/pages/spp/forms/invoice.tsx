@@ -31,7 +31,9 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { ArrowUpDown, Download, FileText, PlusCircle, Search, Send, Trash2 } from 'lucide-react';
 
-interface InvoiceItem {
+type VatOption = 'include' | 'exclude' | 'tanpa';
+
+interface InvoiceOpeItem {
     description: string;
     quantity: number;
     unitPrice: number;
@@ -45,17 +47,15 @@ interface InvoiceTimelineEvent {
 
 interface InvoiceRecord {
     id: string;
-    clientName: string;
-    projectName: string;
-    issueDate: string;
-    dueDate: string;
-    totalAmount: number;
+    submissionDate: string;
+    invoiceDate: string;
+    activityName: string;
+    baseAmount: number;
+    vatOption: VatOption;
     amountPaid: number;
     status: 'Pending' | 'Partial' | 'Paid' | 'Overdue';
     statusNote?: string | null;
-    accountManager: string;
-    accountManagerEmail?: string | null;
-    items: InvoiceItem[];
+    opeItems: InvoiceOpeItem[];
     timeline: InvoiceTimelineEvent[];
     notes?: string | null;
     paymentLink?: string | null;
@@ -64,22 +64,20 @@ interface InvoiceRecord {
 const invoiceRecords: InvoiceRecord[] = [
     {
         id: 'inv-2025-001',
-        clientName: 'PT Nusantara Digital',
-        projectName: 'Transformasi Digital 2025',
-        issueDate: '2025-01-12T08:00:00+07:00',
-        dueDate: '2025-02-11T23:59:59+07:00',
-        totalAmount: 45000000,
+        submissionDate: '2025-01-10T09:10:00+07:00',
+        invoiceDate: '2025-01-12T08:15:00+07:00',
+        activityName: 'Transformasi Digital 2025',
+        baseAmount: 30000000,
+        vatOption: 'include',
         amountPaid: 30000000,
         status: 'Partial',
         statusNote: 'Menunggu pembayaran termin kedua sebelum 11 Februari 2025.',
-        accountManager: 'Dewi Lestari',
-        accountManagerEmail: 'dewi.lestari@spp-connect.id',
-        items: [
-            { description: 'Workshop Kick-off', quantity: 1, unitPrice: 15000000 },
-            { description: 'Pengembangan Modul LMS', quantity: 1, unitPrice: 20000000 },
-            { description: 'Support Bulanan (Januari)', quantity: 1, unitPrice: 10000000 },
+        opeItems: [
+            { description: 'Koordinasi Lapangan', quantity: 1, unitPrice: 2500000 },
+            { description: 'Perjalanan Tim Teknis', quantity: 1, unitPrice: 7500000 },
         ],
         timeline: [
+            { label: 'Pengajuan disetujui', date: '2025-01-10T10:30:00+07:00' },
             { label: 'Invoice diterbitkan', date: '2025-01-12T08:15:00+07:00' },
             { label: 'Pembayaran termin 1 (Rp15.000.000)', date: '2025-01-20T09:05:00+07:00' },
             { label: 'Pembayaran termin 2 (Rp15.000.000)', date: '2025-01-28T13:42:00+07:00' },
@@ -89,22 +87,20 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2025-002',
-        clientName: 'Kementerian X',
-        projectName: 'Monitoring Evaluasi Wilayah',
-        issueDate: '2025-01-25T08:00:00+07:00',
-        dueDate: '2025-02-24T23:59:59+07:00',
-        totalAmount: 27500000,
+        submissionDate: '2025-01-22T11:40:00+07:00',
+        invoiceDate: '2025-01-25T08:25:00+07:00',
+        activityName: 'Monitoring Evaluasi Wilayah',
+        baseAmount: 21000000,
+        vatOption: 'include',
         amountPaid: 0,
         status: 'Pending',
         statusNote: 'Invoice baru dikirim, belum ada konfirmasi pembayaran.',
-        accountManager: 'Ardi Prasetyo',
-        accountManagerEmail: 'ardi.prasetyo@spp-connect.id',
-        items: [
-            { description: 'Analisis Kebutuhan Regional', quantity: 1, unitPrice: 12000000 },
-            { description: 'Lokakarya Tatap Muka', quantity: 1, unitPrice: 9000000 },
-            { description: 'Pendampingan Daring', quantity: 1, unitPrice: 6500000 },
+        opeItems: [
+            { description: 'Dokumentasi Lapangan', quantity: 1, unitPrice: 4500000 },
+            { description: 'Transportasi Tim Evaluator', quantity: 1, unitPrice: 3200000 },
         ],
         timeline: [
+            { label: 'Pengajuan dicatat', date: '2025-01-22T12:05:00+07:00' },
             { label: 'Invoice diterbitkan', date: '2025-01-25T08:25:00+07:00' },
             { label: 'Pengingat pertama terkirim', date: '2025-02-05T10:00:00+07:00', note: 'Email otomatis ke bendahara.' },
         ],
@@ -113,18 +109,16 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2024-219',
-        clientName: 'Universitas Garuda',
-        projectName: 'Program Penguatan Literasi',
-        issueDate: '2024-11-16T08:00:00+07:00',
-        dueDate: '2024-12-16T23:59:59+07:00',
-        totalAmount: 32000000,
-        amountPaid: 32000000,
+        submissionDate: '2024-11-14T15:00:00+07:00',
+        invoiceDate: '2024-11-16T08:10:00+07:00',
+        activityName: 'Program Penguatan Literasi',
+        baseAmount: 28000000,
+        vatOption: 'exclude',
+        amountPaid: 39000000,
         status: 'Paid',
-        accountManager: 'Sari Mulyani',
-        items: [
-            { description: 'Pelatihan Guru Regional', quantity: 2, unitPrice: 8000000 },
-            { description: 'Materi & Modul Cetak', quantity: 1, unitPrice: 6000000 },
-            { description: 'Monitoring 3 Bulan', quantity: 1, unitPrice: 10000000 },
+        opeItems: [
+            { description: 'Konsumsi Peserta', quantity: 2, unitPrice: 4500000 },
+            { description: 'Logistik Modul Cetak', quantity: 1, unitPrice: 2000000 },
         ],
         timeline: [
             { label: 'Invoice diterbitkan', date: '2024-11-16T08:10:00+07:00' },
@@ -134,20 +128,20 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2024-207',
-        clientName: 'Komunitas Berdaya',
-        projectName: 'Program Pemberdayaan Digital',
-        issueDate: '2024-10-05T08:00:00+07:00',
-        dueDate: '2024-11-04T23:59:59+07:00',
-        totalAmount: 18000000,
+        submissionDate: '2024-10-02T14:45:00+07:00',
+        invoiceDate: '2024-10-05T08:20:00+07:00',
+        activityName: 'Program Pemberdayaan Digital',
+        baseAmount: 14000000,
+        vatOption: 'tanpa',
         amountPaid: 9000000,
         status: 'Overdue',
         statusNote: 'Termin kedua terlambat sejak 4 November 2024.',
-        accountManager: 'Ardi Prasetyo',
-        items: [
-            { description: 'Pelatihan Dasar', quantity: 1, unitPrice: 8000000 },
-            { description: 'Pendampingan Komunitas', quantity: 1, unitPrice: 10000000 },
+        opeItems: [
+            { description: 'Perjalanan Pendamping', quantity: 1, unitPrice: 2500000 },
+            { description: 'Sewa Fasilitas', quantity: 1, unitPrice: 1500000 },
         ],
         timeline: [
+            { label: 'Pengajuan dicatat', date: '2024-10-02T14:45:00+07:00' },
             { label: 'Invoice diterbitkan', date: '2024-10-05T08:20:00+07:00' },
             { label: 'Pembayaran termin 1 (Rp9.000.000)', date: '2024-10-18T16:45:00+07:00' },
             { label: 'Pengingat kedua', date: '2024-11-12T09:30:00+07:00', note: 'Telepon ke koordinator program.' },
@@ -185,7 +179,17 @@ const dateTimeFormatter = new Intl.DateTimeFormat('id-ID', {
     minute: '2-digit',
 });
 
-const getOutstandingAmount = (invoice: InvoiceRecord): number => Math.max(invoice.totalAmount - invoice.amountPaid, 0);
+const getOpeTotalAmount = (invoice: InvoiceRecord): number =>
+    invoice.opeItems.reduce((total, item) => total + item.quantity * item.unitPrice, 0);
+
+const getVatAmountFromRecord = (invoice: InvoiceRecord): number =>
+    invoice.vatOption === 'include' ? invoice.baseAmount * 0.11 : 0;
+
+const getTotalInvoiceAmount = (invoice: InvoiceRecord): number =>
+    invoice.baseAmount + getVatAmountFromRecord(invoice) + getOpeTotalAmount(invoice);
+
+const getOutstandingAmount = (invoice: InvoiceRecord): number =>
+    Math.max(getTotalInvoiceAmount(invoice) - invoice.amountPaid, 0);
 
 const formatInvoiceNumber = (invoice: InvoiceRecord): string => {
     const segments = invoice.id.split('-');
@@ -195,7 +199,7 @@ const formatInvoiceNumber = (invoice: InvoiceRecord): string => {
     }
 
     const [prefix, year, sequence] = segments;
-    const monthRoman = romanMonths[new Date(invoice.issueDate).getMonth()] ?? '-';
+    const monthRoman = romanMonths[new Date(invoice.invoiceDate).getMonth()] ?? '-';
     const prefixUpper = prefix.toUpperCase();
 
     return `${sequence}/${'SPP'}-${prefixUpper}/${monthRoman}/${year}`;
@@ -220,30 +224,32 @@ const createBlankItem = (): DraftInvoiceItem => ({
 export default function InvoiceList() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | InvoiceRecord['status']>('all');
-    const [sortField, setSortField] = useState<'issueDate' | 'dueDate' | 'clientName' | 'totalAmount'>('dueDate');
+    const [sortField, setSortField] = useState<'submissionDate' | 'invoiceDate' | 'activityName' | 'total'>('invoiceDate');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
     const [isDetailOpen, setDetailOpen] = useState(false);
     const [isCreateOpen, setCreateOpen] = useState(false);
     const [draftStatus, setDraftStatus] = useState<DraftInvoiceStatus>('Pending');
     const [draftForm, setDraftForm] = useState({
-        clientName: '',
-        projectName: '',
-        issueDate: '',
-        dueDate: '',
-        accountManager: '',
-        accountManagerEmail: '',
+        submissionDate: '',
+        invoiceDate: '',
+        activityName: '',
+        baseAmount: '',
+        vatOption: 'include' as VatOption,
         notes: '',
     });
     const [draftItems, setDraftItems] = useState<DraftInvoiceItem[]>([createBlankItem()]);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [confirmationLetterFile, setConfirmationLetterFile] = useState<File | null>(null);
+    const [fileInputKey, setFileInputKey] = useState<number>(Date.now());
 
     const summary = useMemo(() => {
         return invoiceRecords.reduce(
             (acc, invoice) => {
+                const totalAmount = getTotalInvoiceAmount(invoice);
                 const outstanding = getOutstandingAmount(invoice);
 
-                acc.totalInvoiced += invoice.totalAmount;
+                acc.totalInvoiced += totalAmount;
                 acc.totalPaid += invoice.amountPaid;
                 acc.totalOutstanding += outstanding;
                 acc.overdueCount += invoice.status === 'Overdue' ? 1 : 0;
@@ -278,10 +284,9 @@ export default function InvoiceList() {
             const haystack = [
                 invoice.id,
                 formattedNumber,
-                invoice.clientName,
-                invoice.projectName,
-                invoice.accountManager,
+                invoice.activityName,
                 invoice.status,
+                invoice.vatOption,
             ]
                 .join(' ')
                 .toLowerCase();
@@ -292,12 +297,12 @@ export default function InvoiceList() {
         const sorted = [...filtered].sort((a, b) => {
             let result = 0;
 
-            if (sortField === 'issueDate' || sortField === 'dueDate') {
+            if (sortField === 'submissionDate' || sortField === 'invoiceDate') {
                 result = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime();
-            } else if (sortField === 'clientName') {
-                result = a.clientName.localeCompare(b.clientName, 'id-ID', { sensitivity: 'base' });
-            } else if (sortField === 'totalAmount') {
-                result = a.totalAmount - b.totalAmount;
+            } else if (sortField === 'activityName') {
+                result = a.activityName.localeCompare(b.activityName, 'id-ID', { sensitivity: 'base' });
+            } else if (sortField === 'total') {
+                result = getTotalInvoiceAmount(a) - getTotalInvoiceAmount(b);
             }
 
             return sortDirection === 'asc' ? result : -result;
@@ -314,6 +319,42 @@ export default function InvoiceList() {
     const handleDraftFieldChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = event.target;
         setDraftForm((previous) => ({ ...previous, [name]: value }));
+        setFormErrors((previous) => {
+            if (!(name in previous)) {
+                return previous;
+            }
+
+            const { [name]: _removed, ...rest } = previous;
+            return rest;
+        });
+    };
+
+    const handleVatChange = (value: VatOption) => {
+        setDraftForm((previous) => ({ ...previous, vatOption: value }));
+        setFormErrors((previous) => {
+            const { vatOption, ...rest } = previous;
+            return rest;
+        });
+    };
+
+    const handleConfirmationLetterChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0] ?? null;
+
+        if (file && file.type !== 'application/pdf') {
+            event.target.value = '';
+            setFormErrors((previous) => ({ ...previous, confirmationLetter: 'Berkas harus berformat PDF.' }));
+            setConfirmationLetterFile(null);
+            return;
+        }
+
+        setConfirmationLetterFile(file);
+        if (!file) {
+            event.target.value = '';
+        }
+        setFormErrors((previous) => {
+            const { confirmationLetter, ...rest } = previous;
+            return rest;
+        });
     };
 
     const handleItemChange = (
@@ -341,7 +382,7 @@ export default function InvoiceList() {
         setDraftItems((previous) => (previous.length === 1 ? previous : previous.filter((item) => item.id !== id)));
     };
 
-    const draftTotal = useMemo(() => {
+    const draftOpeTotal = useMemo(() => {
         return draftItems.reduce((total, item) => {
             const quantity = Number(item.quantity) || 0;
             const unitPrice = Number(item.unitPrice) || 0;
@@ -350,28 +391,43 @@ export default function InvoiceList() {
         }, 0);
     }, [draftItems]);
 
+    const baseAmountValue = useMemo(() => Number(draftForm.baseAmount) || 0, [draftForm.baseAmount]);
+
+    const vatAmount = useMemo(() => {
+        if (draftForm.vatOption !== 'include') {
+            return 0;
+        }
+
+        return baseAmountValue * 0.11;
+    }, [draftForm.vatOption, baseAmountValue]);
+
+    const totalInvoiceAmount = useMemo(() => baseAmountValue + vatAmount + draftOpeTotal, [baseAmountValue, vatAmount, draftOpeTotal]);
+
     const validateDraft = () => {
         const errors: Record<string, string> = {};
 
-        if (!draftForm.clientName.trim()) {
-            errors.clientName = 'Nama klien wajib diisi.';
+        if (!draftForm.submissionDate) {
+            errors.submissionDate = 'Tanggal pengajuan wajib diisi.';
         }
-        if (!draftForm.projectName.trim()) {
-            errors.projectName = 'Nama proyek wajib diisi.';
+        if (!draftForm.invoiceDate) {
+            errors.invoiceDate = 'Tanggal invoice wajib diisi.';
         }
-        if (!draftForm.issueDate) {
-            errors.issueDate = 'Tanggal terbit wajib diisi.';
+        if (!draftForm.activityName.trim()) {
+            errors.activityName = 'Nama kegiatan wajib diisi.';
         }
-        if (!draftForm.dueDate) {
-            errors.dueDate = 'Tanggal jatuh tempo wajib diisi.';
-        }
-        if (!draftForm.accountManager.trim()) {
-            errors.accountManager = 'Account manager wajib diisi.';
+        if (!draftForm.baseAmount.trim()) {
+            errors.baseAmount = 'Tagihan invoice wajib diisi.';
+        } else if (Number(draftForm.baseAmount) <= 0) {
+            errors.baseAmount = 'Tagihan invoice harus lebih dari 0.';
         }
 
         const hasValidItem = draftItems.every((item) => item.description.trim() && Number(item.quantity) > 0);
         if (!hasValidItem) {
-            errors.items = 'Setiap item membutuhkan deskripsi dan jumlah minimal 1.';
+            errors.items = 'Setiap rincian membutuhkan deskripsi dan jumlah minimal 1.';
+        }
+
+        if (!confirmationLetterFile) {
+            errors.confirmationLetter = 'Unggah bukti confirmation letter dalam format PDF.';
         }
 
         return errors;
@@ -379,17 +435,18 @@ export default function InvoiceList() {
 
     const resetDraftState = () => {
         setDraftForm({
-            clientName: '',
-            projectName: '',
-            issueDate: '',
-            dueDate: '',
-            accountManager: '',
-            accountManagerEmail: '',
+            submissionDate: '',
+            invoiceDate: '',
+            activityName: '',
+            baseAmount: '',
+            vatOption: 'include',
             notes: '',
         });
         setDraftItems([createBlankItem()]);
         setDraftStatus('Pending');
         setFormErrors({});
+        setConfirmationLetterFile(null);
+        setFileInputKey(Date.now());
     };
 
     const handleDraftSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -403,7 +460,9 @@ export default function InvoiceList() {
 
         setFormErrors({});
         setCreateOpen(false);
-        window.alert('Invoice tersimpan sebagai draft (demo). Integrasi backend belum tersedia.');
+        window.alert(
+            `Invoice tersimpan sebagai draft (demo). Total sebesar ${currencyFormatter.format(totalInvoiceAmount)}. Integrasi backend belum tersedia.`,
+        );
         resetDraftState();
     };
 
@@ -447,81 +506,78 @@ export default function InvoiceList() {
                                 <form className="space-y-6" onSubmit={handleDraftSubmit}>
                                     <div className="grid gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="clientName">Nama Klien</Label>
+                                            <Label htmlFor="submissionDate">Tanggal Pengajuan</Label>
                                             <Input
-                                                id="clientName"
-                                                name="clientName"
-                                                value={draftForm.clientName}
+                                                id="submissionDate"
+                                                name="submissionDate"
+                                                type="date"
+                                                value={draftForm.submissionDate}
                                                 onChange={handleDraftFieldChange}
-                                                placeholder="Contoh: PT Nusantara Digital"
                                                 autoFocus
                                             />
-                                            {formErrors.clientName && (
-                                                <p className="text-xs text-destructive">{formErrors.clientName}</p>
+                                            {formErrors.submissionDate && (
+                                                <p className="text-xs text-destructive">{formErrors.submissionDate}</p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="projectName">Nama Proyek</Label>
+                                            <Label htmlFor="invoiceDate">Tanggal Invoice</Label>
                                             <Input
-                                                id="projectName"
-                                                name="projectName"
-                                                value={draftForm.projectName}
-                                                onChange={handleDraftFieldChange}
-                                                placeholder="Contoh: Transformasi Digital 2025"
-                                            />
-                                            {formErrors.projectName && (
-                                                <p className="text-xs text-destructive">{formErrors.projectName}</p>
-                                            )}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="issueDate">Tanggal Terbit</Label>
-                                            <Input
-                                                id="issueDate"
-                                                name="issueDate"
+                                                id="invoiceDate"
+                                                name="invoiceDate"
                                                 type="date"
-                                                value={draftForm.issueDate}
+                                                value={draftForm.invoiceDate}
                                                 onChange={handleDraftFieldChange}
                                             />
-                                            {formErrors.issueDate && (
-                                                <p className="text-xs text-destructive">{formErrors.issueDate}</p>
+                                            {formErrors.invoiceDate && (
+                                                <p className="text-xs text-destructive">{formErrors.invoiceDate}</p>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <Label htmlFor="activityName">Kegiatan</Label>
+                                            <Input
+                                                id="activityName"
+                                                name="activityName"
+                                                value={draftForm.activityName}
+                                                onChange={handleDraftFieldChange}
+                                                placeholder="Contoh: Monitoring Evaluasi Wilayah"
+                                            />
+                                            {formErrors.activityName && (
+                                                <p className="text-xs text-destructive">{formErrors.activityName}</p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="dueDate">Jatuh Tempo</Label>
+                                            <Label htmlFor="baseAmount">Tagihan Invoice (Rp)</Label>
                                             <Input
-                                                id="dueDate"
-                                                name="dueDate"
-                                                type="date"
-                                                value={draftForm.dueDate}
+                                                id="baseAmount"
+                                                name="baseAmount"
+                                                type="number"
+                                                min={0}
+                                                value={draftForm.baseAmount}
                                                 onChange={handleDraftFieldChange}
+                                                placeholder="Contoh: 15000000"
                                             />
-                                            {formErrors.dueDate && (
-                                                <p className="text-xs text-destructive">{formErrors.dueDate}</p>
+                                            {formErrors.baseAmount && (
+                                                <p className="text-xs text-destructive">{formErrors.baseAmount}</p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="accountManager">Account Manager</Label>
-                                            <Input
-                                                id="accountManager"
-                                                name="accountManager"
-                                                value={draftForm.accountManager}
-                                                onChange={handleDraftFieldChange}
-                                                placeholder="Nama penanggung jawab"
-                                            />
-                                            {formErrors.accountManager && (
-                                                <p className="text-xs text-destructive">{formErrors.accountManager}</p>
+                                            <Label htmlFor="vatOption">PPN</Label>
+                                            <Select
+                                                value={draftForm.vatOption}
+                                                onValueChange={(value) => handleVatChange(value as VatOption)}
+                                            >
+                                                <SelectTrigger id="vatOption">
+                                                    <SelectValue placeholder="Pilih skema PPN" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="include">Include PPN 11%</SelectItem>
+                                                    <SelectItem value="exclude">Exclude PPN</SelectItem>
+                                                    <SelectItem value="tanpa">Tanpa PPN</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {formErrors.vatOption && (
+                                                <p className="text-xs text-destructive">{formErrors.vatOption}</p>
                                             )}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="accountManagerEmail">Email Account Manager (opsional)</Label>
-                                            <Input
-                                                id="accountManagerEmail"
-                                                name="accountManagerEmail"
-                                                type="email"
-                                                value={draftForm.accountManagerEmail}
-                                                onChange={handleDraftFieldChange}
-                                                placeholder="nama@perusahaan.id"
-                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Status Invoice</Label>
@@ -548,21 +604,43 @@ export default function InvoiceList() {
                                                 className="flex min-h-[110px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                             />
                                         </div>
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <Label htmlFor="confirmationLetter">Upload Bukti Confirmation Letter (PDF)</Label>
+                                            <Input
+                                                key={fileInputKey}
+                                                id="confirmationLetter"
+                                                name="confirmationLetter"
+                                                type="file"
+                                                accept=".pdf,application/pdf"
+                                                onChange={handleConfirmationLetterChange}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Unggah dokumen PDF yang telah disetujui klien.
+                                            </p>
+                                            {confirmationLetterFile && (
+                                                <p className="text-xs text-foreground">
+                                                    Berkas dipilih: {confirmationLetterFile.name}
+                                                </p>
+                                            )}
+                                            {formErrors.confirmationLetter && (
+                                                <p className="text-xs text-destructive">{formErrors.confirmationLetter}</p>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-sm font-medium">Rincian Item</p>
+                                                <p className="text-sm font-medium">Rincian Invoice OPE</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Sesuaikan daftar layanan atau produk yang ingin ditagihkan.
+                                                    Catat komponen operasional (OPE) yang perlu ditambahkan pada invoice.
                                                 </p>
                                                 {formErrors.items && (
                                                     <p className="mt-1 text-xs text-destructive">{formErrors.items}</p>
                                                 )}
                                             </div>
                                             <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleAddItem}>
-                                                <PlusCircle className="h-4 w-4" /> Tambah Item
+                                                <PlusCircle className="h-4 w-4" /> Tambah Rincian
                                             </Button>
                                         </div>
                                         <div className="space-y-3">
@@ -621,7 +699,7 @@ export default function InvoiceList() {
                                                         </div>
                                                     </div>
                                                     <p className="mt-2 text-xs text-muted-foreground">
-                                                        Subtotal:{' '}
+                                                        Subtotal OPE:{' '}
                                                         <span className="font-medium text-foreground">
                                                             {currencyFormatter.format(
                                                                 (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
@@ -637,15 +715,39 @@ export default function InvoiceList() {
 
                                     <div className="grid gap-3 sm:grid-cols-2">
                                         <div className="space-y-1">
-                                            <p className="text-xs text-muted-foreground">Total Draft</p>
-                                            <p className="text-lg font-semibold">
-                                                {currencyFormatter.format(draftTotal)}
+                                            <p className="text-xs text-muted-foreground">Tagihan Invoice</p>
+                                            <p className="text-sm font-medium">
+                                                {currencyFormatter.format(baseAmountValue)}
                                             </p>
                                         </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-muted-foreground">PPN 11%</p>
+                                            <p className="text-sm font-medium">
+                                                {draftForm.vatOption === 'include'
+                                                    ? currencyFormatter.format(vatAmount)
+                                                    : 'Tidak dihitung'}
+                                            </p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-muted-foreground">Total Rincian OPE</p>
+                                            <p className="text-sm font-medium">
+                                                {currencyFormatter.format(draftOpeTotal)}
+                                            </p>
+                                        </div>
+        
                                         <div className="space-y-1">
                                             <p className="text-xs text-muted-foreground">Status Saat Disimpan</p>
                                             <p className="text-sm font-medium">{draftStatus}</p>
                                         </div>
+                                    </div>
+
+                                    <Separator />
+
+                                    <div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-4 py-3">
+                                        <p className="text-sm font-semibold">Total Invoice</p>
+                                        <p className="text-lg font-bold text-foreground">
+                                            {currencyFormatter.format(totalInvoiceAmount)}
+                                        </p>
                                     </div>
 
                                     <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -712,7 +814,7 @@ export default function InvoiceList() {
                                 <Input
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
-                                    placeholder="Cari nomor invoice, klien, atau proyek"
+                                    placeholder="Cari nomor invoice atau kegiatan"
                                     className="pl-9"
                                 />
                             </div>
@@ -733,10 +835,10 @@ export default function InvoiceList() {
                                     <SelectValue placeholder="Urutkan berdasarkan" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="dueDate">Jatuh Tempo</SelectItem>
-                                    <SelectItem value="issueDate">Tanggal Terbit</SelectItem>
-                                    <SelectItem value="clientName">Nama Klien</SelectItem>
-                                    <SelectItem value="totalAmount">Nominal</SelectItem>
+                                    <SelectItem value="invoiceDate">Tanggal Invoice</SelectItem>
+                                    <SelectItem value="submissionDate">Tanggal Pengajuan</SelectItem>
+                                    <SelectItem value="activityName">Nama Kegiatan</SelectItem>
+                                    <SelectItem value="total">Total Invoice</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button
@@ -758,10 +860,11 @@ export default function InvoiceList() {
                             <thead className="text-xs uppercase tracking-wide text-muted-foreground">
                                 <tr>
                                     <th className="px-4 py-2">Nomor Invoice</th>
-                                    <th className="px-4 py-2">Klien</th>
-                                    <th className="px-4 py-2">Proyek</th>
-                                    <th className="px-4 py-2">Terbit</th>
-                                    <th className="px-4 py-2">Jatuh Tempo</th>
+                                    <th className="px-4 py-2">Tanggal Pengajuan</th>
+                                    <th className="px-4 py-2">Tanggal Invoice</th>
+                                    <th className="px-4 py-2">Kegiatan</th>
+                                    <th className="px-4 py-2 text-right">Tagihan Invoice</th>
+                                    <th className="px-4 py-2 text-right">Total OPE</th>
                                     <th className="px-4 py-2 text-right">Total</th>
                                     <th className="px-4 py-2 text-right">Outstanding</th>
                                     <th className="px-4 py-2">Status</th>
@@ -771,7 +874,7 @@ export default function InvoiceList() {
                             <tbody className="text-sm">
                                 {filteredInvoices.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                                        <td colSpan={10} className="px-4 py-6 text-center text-sm text-muted-foreground">
                                             Tidak ada invoice yang cocok dengan filter Anda.
                                         </td>
                                     </tr>
@@ -779,6 +882,8 @@ export default function InvoiceList() {
                                     filteredInvoices.map((invoice) => {
                                         const outstanding = getOutstandingAmount(invoice);
                                         const formattedNumber = formatInvoiceNumber(invoice);
+                                        const opeTotal = getOpeTotalAmount(invoice);
+                                        const totalAmount = getTotalInvoiceAmount(invoice);
 
                                         return (
                                             <tr
@@ -786,19 +891,38 @@ export default function InvoiceList() {
                                                 className="rounded-lg bg-muted/30 text-foreground shadow-sm transition hover:bg-muted/50"
                                             >
                                                 <td className="px-4 py-3 font-medium">{formattedNumber}</td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-3" title={dateTimeFormatter.format(new Date(invoice.submissionDate))}>
                                                     <div className="flex flex-col">
-                                                        <span>{invoice.clientName}</span>
+                                                        <span>{dateFormatter.format(new Date(invoice.submissionDate))}</span>
                                                         <span className="text-xs text-muted-foreground">
-                                                            AM: {invoice.accountManager}
+                                                            {new Date(invoice.submissionDate).toLocaleTimeString('id-ID', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                            })}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">{invoice.projectName}</td>
-                                                <td className="px-4 py-3">{dateFormatter.format(new Date(invoice.issueDate))}</td>
-                                                <td className="px-4 py-3">{dateFormatter.format(new Date(invoice.dueDate))}</td>
+                                                <td className="px-4 py-3">{dateFormatter.format(new Date(invoice.invoiceDate))}</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="font-medium">{invoice.activityName}</span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            PPN: {invoice.vatOption === 'include'
+                                                                ? 'Include 11%'
+                                                                : invoice.vatOption === 'exclude'
+                                                                    ? 'Exclude'
+                                                                    : 'Tanpa PPN'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    {currencyFormatter.format(invoice.baseAmount)}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    {opeTotal === 0 ? '-' : currencyFormatter.format(opeTotal)}
+                                                </td>
                                                 <td className="px-4 py-3 text-right font-semibold">
-                                                    {currencyFormatter.format(invoice.totalAmount)}
+                                                    {currencyFormatter.format(totalAmount)}
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     {outstanding === 0
@@ -874,163 +998,230 @@ export default function InvoiceList() {
 
                     <div className="space-y-6">
                         {selectedInvoice ? (
-                            <div className="space-y-6">
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Nomor Invoice</p>
-                                        <p className="font-semibold">{formatInvoiceNumber(selectedInvoice)}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Status</p>
-                                        <Badge variant={invoiceStatusVariant[selectedInvoice.status]}>
-                                            {selectedInvoice.status}
-                                        </Badge>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Klien</p>
-                                        <p className="font-semibold">{selectedInvoice.clientName}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Proyek</p>
-                                        <p className="font-semibold">{selectedInvoice.projectName}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Tanggal Terbit</p>
-                                        <p className="font-semibold">
-                                            {dateTimeFormatter.format(new Date(selectedInvoice.issueDate))}
-                                        </p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Jatuh Tempo</p>
-                                        <p className="font-semibold">
-                                            {dateTimeFormatter.format(new Date(selectedInvoice.dueDate))}
-                                        </p>
-                                    </div>
-                                </div>
+                            (() => {
+                                const vatAmount = getVatAmountFromRecord(selectedInvoice);
+                                const opeTotal = getOpeTotalAmount(selectedInvoice);
+                                const totalAmount = getTotalInvoiceAmount(selectedInvoice);
+                                const outstanding = getOutstandingAmount(selectedInvoice);
 
-                                <Separator />
+                                const vatLabel =
+                                    selectedInvoice.vatOption === 'include'
+                                        ? 'Include PPN 11%'
+                                        : selectedInvoice.vatOption === 'exclude'
+                                        ? 'Exclude PPN'
+                                        : 'Tanpa PPN';
 
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Akun Manager</p>
-                                        <p className="font-semibold">{selectedInvoice.accountManager}</p>
-                                        {selectedInvoice.accountManagerEmail && (
-                                            <p className="text-xs text-muted-foreground">
-                                                {selectedInvoice.accountManagerEmail}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-xs text-muted-foreground">Link Pembayaran</p>
-                                        {selectedInvoice.paymentLink ? (
-                                            <Link
-                                                href={selectedInvoice.paymentLink}
-                                                className="text-sm font-medium text-primary hover:underline"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Buka portal pembayaran
-                                            </Link>
-                                        ) : (
-                                            <span className="text-sm text-muted-foreground">Belum tersedia</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-2">Rincian Item</p>
-                                    <div className="rounded-md border border-muted bg-muted/30">
-                                        <table className="min-w-full text-sm">
-                                            <thead className="text-xs uppercase text-muted-foreground">
-                                                <tr>
-                                                    <th className="px-3 py-2 text-left">Deskripsi</th>
-                                                    <th className="px-3 py-2 text-right">Jumlah</th>
-                                                    <th className="px-3 py-2 text-right">Harga Satuan</th>
-                                                    <th className="px-3 py-2 text-right">Subtotal</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedInvoice.items.map((item) => {
-                                                    const subtotal = item.quantity * item.unitPrice;
-
-                                                    return (
-                                                        <tr key={`${selectedInvoice.id}-${item.description}`} className="border-t border-muted">
-                                                            <td className="px-3 py-2 font-medium">{item.description}</td>
-                                                            <td className="px-3 py-2 text-right">{item.quantity}</td>
-                                                            <td className="px-3 py-2 text-right text-muted-foreground">
-                                                                {currencyFormatter.format(item.unitPrice)}
-                                                            </td>
-                                                            <td className="px-3 py-2 text-right font-semibold">
-                                                                {currencyFormatter.format(subtotal)}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
-                                                        Total Tagihan
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right text-sm font-semibold">
-                                                        {currencyFormatter.format(selectedInvoice.totalAmount)}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
-                                                        Sudah Dibayar
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right text-sm font-semibold">
-                                                        {currencyFormatter.format(selectedInvoice.amountPaid)}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
-                                                        Outstanding
-                                                    </td>
-                                                    <td className="px-3 py-2 text-right text-sm font-semibold">
-                                                        {currencyFormatter.format(getOutstandingAmount(selectedInvoice))}
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div className="space-y-3">
-                                    <p className="text-xs text-muted-foreground">Timeline Pembayaran</p>
-                                    <div className="space-y-3">
-                                        {selectedInvoice.timeline.map((event) => (
-                                            <div key={`${selectedInvoice.id}-${event.label}`} className="rounded-md border border-border/60 p-3">
-                                                <p className="text-sm font-semibold">{event.label}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {dateTimeFormatter.format(new Date(event.date))}
+                                return (
+                                    <div className="space-y-6">
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Nomor Invoice</p>
+                                                <p className="font-semibold">{formatInvoiceNumber(selectedInvoice)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Status</p>
+                                                <Badge variant={invoiceStatusVariant[selectedInvoice.status]}>
+                                                    {selectedInvoice.status}
+                                                </Badge>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Tanggal Pengajuan</p>
+                                                <p className="font-semibold">
+                                                    {dateTimeFormatter.format(new Date(selectedInvoice.submissionDate))}
                                                 </p>
-                                                {event.note && (
-                                                    <p className="mt-1 text-xs text-muted-foreground">Catatan: {event.note}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Tanggal Invoice</p>
+                                                <p className="font-semibold">
+                                                    {dateTimeFormatter.format(new Date(selectedInvoice.invoiceDate))}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Kegiatan</p>
+                                                <p className="font-semibold">{selectedInvoice.activityName}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Jenis PPN</p>
+                                                <p className="text-sm font-medium">{vatLabel}</p>
+                                                {selectedInvoice.vatOption === 'include' && (
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Nilai PPN: {currencyFormatter.format(vatAmount)}
+                                                    </p>
                                                 )}
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Tagihan Invoice</p>
+                                                <p className="font-semibold">{currencyFormatter.format(selectedInvoice.baseAmount)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Total Rincian OPE</p>
+                                                <p className="font-semibold">{currencyFormatter.format(opeTotal)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Sudah Dibayar</p>
+                                                <p className="font-semibold">{currencyFormatter.format(selectedInvoice.amountPaid)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Outstanding</p>
+                                                <p className="font-semibold">{currencyFormatter.format(outstanding)}</p>
+                                            </div>
+                                        </div>
 
-                                {selectedInvoice.statusNote && (
-                                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
-                                        {selectedInvoice.statusNote}
-                                    </div>
-                                )}
+                                        <div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/20 px-4 py-3">
+                                            <p className="text-sm font-semibold">Total Invoice</p>
+                                            <p className="text-lg font-bold text-foreground">
+                                                {currencyFormatter.format(totalAmount)}
+                                            </p>
+                                        </div>
 
-                                {selectedInvoice.notes && (
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Catatan Internal</p>
-                                        <p className="text-sm text-foreground">{selectedInvoice.notes}</p>
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-muted-foreground">Link Pembayaran</p>
+                                                {selectedInvoice.paymentLink ? (
+                                                    <Link
+                                                        href={selectedInvoice.paymentLink}
+                                                        className="text-sm font-medium text-primary hover:underline"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        {selectedInvoice.paymentLink}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-sm text-muted-foreground">Belum tersedia</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {selectedInvoice.statusNote && (
+                                            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+                                                {selectedInvoice.statusNote}
+                                            </div>
+                                        )}
+
+                                        {selectedInvoice.notes && (
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">Catatan Internal</p>
+                                                <p className="text-sm text-foreground">{selectedInvoice.notes}</p>
+                                            </div>
+                                        )}
+
+                                        <Separator />
+
+                                        <div className="space-y-3">
+                                            <p className="text-xs text-muted-foreground">Rincian Invoice OPE</p>
+                                            <div className="rounded-md border border-muted bg-muted/30">
+                                                <table className="min-w-full text-sm">
+                                                    <thead className="text-xs uppercase text-muted-foreground">
+                                                        <tr>
+                                                            <th className="px-3 py-2 text-left">Deskripsi</th>
+                                                            <th className="px-3 py-2 text-right">Jumlah</th>
+                                                            <th className="px-3 py-2 text-right">Harga Satuan</th>
+                                                            <th className="px-3 py-2 text-right">Subtotal</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {selectedInvoice.opeItems.length === 0 ? (
+                                                            <tr>
+                                                                <td colSpan={4} className="px-3 py-4 text-center text-xs text-muted-foreground">
+                                                                    Tidak ada rincian OPE yang tercatat.
+                                                                </td>
+                                                            </tr>
+                                                        ) : (
+                                                            selectedInvoice.opeItems.map((item) => {
+                                                                const subtotal = item.quantity * item.unitPrice;
+
+                                                                return (
+                                                                    <tr key={`${selectedInvoice.id}-${item.description}`} className="border-t border-muted">
+                                                                        <td className="px-3 py-2 font-medium">{item.description}</td>
+                                                                        <td className="px-3 py-2 text-right">{item.quantity}</td>
+                                                                        <td className="px-3 py-2 text-right text-muted-foreground">
+                                                                            {currencyFormatter.format(item.unitPrice)}
+                                                                        </td>
+                                                                        <td className="px-3 py-2 text-right font-semibold">
+                                                                            {currencyFormatter.format(subtotal)}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })
+                                                        )}
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                Total OPE
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {currencyFormatter.format(opeTotal)}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                Tagihan Invoice
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {currencyFormatter.format(selectedInvoice.baseAmount)}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                PPN 11%
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {selectedInvoice.vatOption === 'include'
+                                                                    ? currencyFormatter.format(vatAmount)
+                                                                    : '-'}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                Total Invoice
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {currencyFormatter.format(totalAmount)}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                Sudah Dibayar
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {currencyFormatter.format(selectedInvoice.amountPaid)}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right text-xs uppercase text-muted-foreground" colSpan={3}>
+                                                                Outstanding
+                                                            </td>
+                                                            <td className="px-3 py-2 text-right text-sm font-semibold">
+                                                                {currencyFormatter.format(outstanding)}
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="space-y-3">
+                                            <p className="text-xs text-muted-foreground">Timeline Pembayaran</p>
+                                            <div className="space-y-3">
+                                                {selectedInvoice.timeline.map((event) => (
+                                                    <div key={`${selectedInvoice.id}-${event.label}`} className="rounded-md border border-border/60 p-3">
+                                                        <p className="text-sm font-semibold">{event.label}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {dateTimeFormatter.format(new Date(event.date))}
+                                                        </p>
+                                                        {event.note && (
+                                                            <p className="mt-1 text-xs text-muted-foreground">Catatan: {event.note}</p>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
+                                );
+                            })()
                         ) : (
                             <div className="py-6 text-center text-sm text-muted-foreground">
                                 Tidak ada data invoice yang dipilih.

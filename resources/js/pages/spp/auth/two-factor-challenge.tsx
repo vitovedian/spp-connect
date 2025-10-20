@@ -19,19 +19,19 @@ export default function SppTwoFactorChallenge() {
     const authConfigContent = useMemo(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Use a recovery code',
+                title: 'Gunakan kode pemulihan',
                 description:
-                    'Enter one of your stored SPP recovery codes to prove it’s really you.',
-                toggleText: 'prefer to use an authentication code instead?',
+                    'Masukkan salah satu kode pemulihan SPP yang Anda simpan untuk membuktikan bahwa ini benar-benar Anda.',
+                toggleText: 'lebih suka memakai kode autentikasi?',
                 accent: 'text-emerald-200/80',
             };
         }
 
         return {
-            title: 'Two-factor authentication',
+            title: 'Autentikasi dua faktor',
             description:
-                'Enter the six-digit code from your authenticator app to complete sign-in.',
-            toggleText: 'use a recovery code instead?',
+                'Masukkan enam digit kode dari aplikasi autentikator Anda untuk menyelesaikan proses masuk.',
+            toggleText: 'gunakan kode pemulihan sebagai gantinya?',
             accent: 'text-sky-200/80',
         };
     }, [showRecoveryInput]);
@@ -44,7 +44,7 @@ export default function SppTwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-factor" />
+            <Head title="Dua faktor" />
             <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-slate-50">
                 <div className="pointer-events-none absolute inset-0 -z-10">
                     <div className="absolute inset-x-[-15%] top-[-45%] h-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.45),transparent_65%)] blur-2xl" />
@@ -53,15 +53,15 @@ export default function SppTwoFactorChallenge() {
                 <div className="grid flex-1 items-center gap-12 px-6 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:px-12">
                     <aside className="mx-auto max-w-xl text-center lg:text-left">
                         <p className={`text-xs uppercase tracking-[0.35rem] ${authConfigContent.accent}`}>
-                            Secure access
+                            Akses aman
                         </p>
                         <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
-                            Double-check it’s you
+                            Pastikan ini benar-benar Anda
                         </h1>
                         <p className="mt-5 text-base text-slate-300">
-                            Your workspace contains sensitive stakeholder information. Two-factor
-                            authentication keeps everything protected by requiring a second proof of
-                            identity every time you sign in from a new device.
+                            Ruang kerja Anda memuat informasi pemangku kepentingan yang sensitif. Autentikasi
+                            dua faktor menjaga semuanya tetap terlindungi dengan meminta bukti identitas kedua
+                            setiap kali Anda masuk dari perangkat baru.
                         </p>
                     </aside>
                     <main className="relative mx-auto flex w-full max-w-md flex-col rounded-3xl border border-white/10 bg-white/5 p-8 shadow-[0_45px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-lg">
@@ -86,7 +86,7 @@ export default function SppTwoFactorChallenge() {
                                             <Input
                                                 name="recovery_code"
                                                 type="text"
-                                                placeholder="Recovery code"
+                                                placeholder="Kode pemulihan"
                                                 autoFocus
                                                 className="bg-white/10 text-white placeholder:text-slate-400"
                                                 disabled={processing}
@@ -117,10 +117,10 @@ export default function SppTwoFactorChallenge() {
                                         className="w-full bg-sky-500 text-slate-900 hover:bg-sky-400"
                                         disabled={processing}
                                     >
-                                        Continue
+                                        Lanjutkan
                                     </Button>
                                     <div className="text-center text-sm text-slate-300">
-                                        Need another option?{' '}
+                                        Butuh pilihan lain?{' '}
                                         <button
                                             type="button"
                                             className="text-sky-200 underline underline-offset-4 hover:text-sky-100"

@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 export default function SppWelcome() {
     return (
         <>
-            <Head title="SPP Welcome" />
+            <Head title="Selamat Datang SPP" />
             <section className="relative flex min-h-screen flex-col items-center justify-center gap-6 overflow-hidden bg-gradient-to-br from-primary/25 via-background to-background px-6 py-10 text-foreground md:items-start">
                 <div className="pointer-events-none absolute inset-0 -z-10">
                     <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-[40px] border border-primary/20 bg-white/5 shadow-[0_45px_90px_-40px_rgba(15,23,42,0.65)] blur-sm dark:bg-white/5" />
@@ -25,12 +25,12 @@ export default function SppWelcome() {
                         SPP Connect
                     </p>
                     <h1 className="mt-3 text-4xl font-semibold md:text-5xl">
-                        Welcome to the SPP experience
+                        Selamat datang di pengalaman SPP
                     </h1>
                     <p className="mt-4 max-w-xl text-balance text-sm leading-relaxed text-muted-foreground md:text-base">
-                        Get started by exploring the dashboard, managing your stakeholders, and
-                        collaborating with your team in real time. We built a streamlined workflow
-                        so you can focus on what matters most.
+                        Mulailah dengan menjelajahi dasbor, mengelola para pemangku kepentingan,
+                        dan berkolaborasi dengan tim Anda secara langsung. Kami menyiapkan alur kerja
+                        yang ringkas agar Anda bisa fokus pada hal terpenting.
                     </p>
                 </div>
                 <div className="z-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">
@@ -38,13 +38,13 @@ export default function SppWelcome() {
                         href="/login"
                         className="rounded-md border border-border px-5 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
                     >
-                        Log in
+                        Masuk
                     </Link>
                     <Link
                         href="/register"
                         className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
                     >
-                        Create account
+                        Buat akun
                     </Link>
                 </div>
             </section>

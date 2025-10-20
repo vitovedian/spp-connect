@@ -8,58 +8,58 @@ export default function Dashboard() {
     // Mock data for dashboard statistics
     const stats = [
         {
-            title: 'Total Stakeholders',
-            value: '1,234',
-            change: '+12.5%',
+            title: 'Total Pemangku Kepentingan',
+            value: '1.234',
+            change: '+12,5%',
             icon: Users,
             color: 'bg-blue-500',
         },
         {
-            title: 'Total Projects',
+            title: 'Total Proyek',
             value: '56',
-            change: '+8.2%',
+            change: '+8,2%',
             icon: FileText,
             color: 'bg-green-500',
         },
         {
-            title: 'Total Budget',
-            value: '$2.4M',
-            change: '+15.3%',
+            title: 'Total Anggaran',
+            value: 'Rp2,4M',
+            change: '+15,3%',
             icon: DollarSign,
             color: 'bg-purple-500',
         },
         {
-            title: 'Active Collaborations',
+            title: 'Kolaborasi Aktif',
             value: '23',
-            change: '+5.7%',
+            change: '+5,7%',
             icon: Activity,
             color: 'bg-orange-500',
         },
     ];
 
     const recentActivity = [
-        { id: 1, user: 'John Doe', action: 'created a new project', time: '2 min ago' },
-        { id: 2, user: 'Jane Smith', action: 'updated stakeholder information', time: '15 min ago' },
-        { id: 3, user: 'Robert Johnson', action: 'submitted a report', time: '1 hour ago' },
-        { id: 4, user: 'Emily Davis', action: 'commented on a document', time: '3 hours ago' },
+        { id: 1, user: 'John Doe', action: 'membuat proyek baru', time: '2 menit lalu' },
+        { id: 2, user: 'Jane Smith', action: 'memperbarui data pemangku kepentingan', time: '15 menit lalu' },
+        { id: 3, user: 'Robert Johnson', action: 'mengirimkan laporan', time: '1 jam lalu' },
+        { id: 4, user: 'Emily Davis', action: 'memberi komentar pada dokumen', time: '3 jam lalu' },
     ];
 
     const projects = [
-        { id: 1, name: 'Infrastructure Upgrade', progress: 75, status: 'In Progress' },
-        { id: 2, name: 'Community Outreach', progress: 45, status: 'Planning' },
-        { id: 3, name: 'Environmental Impact', progress: 90, status: 'Review' },
-        { id: 4, name: 'Financial Audit', progress: 30, status: 'In Progress' },
+        { id: 1, name: 'Peningkatan Infrastruktur', progress: 75, status: 'Sedang Berjalan' },
+        { id: 2, name: 'Jangkauan Komunitas', progress: 45, status: 'Perencanaan' },
+        { id: 3, name: 'Dampak Lingkungan', progress: 90, status: 'Tinjauan' },
+        { id: 4, name: 'Audit Keuangan', progress: 30, status: 'Sedang Berjalan' },
     ];
 
     return (
         <div className="min-h-screen bg-background pl-4 lg:pl-4"> {/* pl-4 provides 4 units of left padding */}
-            <Head title="Dashboard" />
+            <Head title="Dasbor" />
             
             <div className="space-y-6 p-6">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Dasbor</h1>
                     <p className="text-muted-foreground">
-                        Welcome back! Here's what's happening with your SPP projects today.
+                        Selamat datang kembali! Berikut ringkasan perkembangan terbaru proyek SPP Anda hari ini.
                     </p>
                 </div>
 
@@ -92,8 +92,8 @@ export default function Dashboard() {
                     {/* Recent Activity */}
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle>Recent Activity</CardTitle>
-                            <CardDescription>Your team's latest updates</CardDescription>
+                            <CardTitle>Aktivitas Terbaru</CardTitle>
+                            <CardDescription>Pembaruan terkini dari tim Anda</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -133,12 +133,12 @@ export default function Dashboard() {
                                                         style={{ width: `${project.progress}%` }}
                                                     ></div>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground mt-1">{project.progress}% complete</p>
-                                            </div>
+                                                <p className="text-xs text-muted-foreground mt-1">{project.progress}% selesai</p>
                                         </div>
+                                    </div>
                                         <Badge 
-                                            variant={project.status === 'In Progress' ? 'default' : 
-                                                    project.status === 'Review' ? 'secondary' : 'outline'}
+                                            variant={project.status === 'Sedang Berjalan' ? 'default' : 
+                                                    project.status === 'Tinjauan' ? 'secondary' : 'outline'}
                                             className="ml-4"
                                         >
                                             {project.status}
@@ -154,8 +154,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Quick Actions</CardTitle>
-                            <CardDescription>Access important features</CardDescription>
+                            <CardTitle>Aksi Cepat</CardTitle>
+                            <CardDescription>Akses fitur penting secara instan</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 gap-4">
@@ -163,36 +163,36 @@ export default function Dashboard() {
                                     <div className="text-left">
                                         <div className="flex items-center gap-2">
                                             <FileText className="h-6 w-6 text-blue-500" />
-                                            <span className="font-medium">Create Project</span>
+                                            <span className="font-medium">Buat Proyek</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-2">Start a new SPP initiative</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Mulai inisiatif SPP baru</p>
                                     </div>
                                 </Button>
                                 <Button variant="outline" className="h-auto p-4 text-left justify-start">
                                     <div className="text-left">
                                         <div className="flex items-center gap-2">
                                             <Users className="h-6 w-6 text-green-500" />
-                                            <span className="font-medium">Manage Stakeholders</span>
+                                            <span className="font-medium">Kelola Pemangku Kepentingan</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-2">Add or update contacts</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Tambah atau perbarui kontak</p>
                                     </div>
                                 </Button>
                                 <Button variant="outline" className="h-auto p-4 text-left justify-start">
                                     <div className="text-left">
                                         <div className="flex items-center gap-2">
                                             <DollarSign className="h-6 w-6 text-purple-500" />
-                                            <span className="font-medium">Budget Tracking</span>
+                                            <span className="font-medium">Pantau Anggaran</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-2">Monitor finances</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Awasi posisi keuangan</p>
                                     </div>
                                 </Button>
                                 <Button variant="outline" className="h-auto p-4 text-left justify-start">
                                     <div className="text-left">
                                         <div className="flex items-center gap-2">
                                             <Activity className="h-6 w-6 text-orange-500" />
-                                            <span className="font-medium">Generate Report</span>
+                                            <span className="font-medium">Buat Laporan</span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-2">Create insights</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Susun wawasan utama</p>
                                     </div>
                                 </Button>
                             </div>
@@ -201,8 +201,8 @@ export default function Dashboard() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>Upcoming Milestones</CardTitle>
-                            <CardDescription>Important dates to remember</CardDescription>
+                            <CardTitle>Agenda Mendatang</CardTitle>
+                            <CardDescription>Tanggal penting yang perlu dicatat</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -211,8 +211,8 @@ export default function Dashboard() {
                                         <FileText className="h-4 w-4 text-blue-500" />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-medium">Infrastructure Project Review</p>
-                                        <p className="text-xs text-muted-foreground">Due in 3 days</p>
+                                        <p className="text-sm font-medium">Review Proyek Infrastruktur</p>
+                                        <p className="text-xs text-muted-foreground">Jatuh tempo dalam 3 hari</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-4">
@@ -220,8 +220,8 @@ export default function Dashboard() {
                                         <Users className="h-4 w-4 text-green-500" />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-medium">Stakeholder Meeting</p>
-                                        <p className="text-xs text-muted-foreground">Due in 1 week</p>
+                                        <p className="text-sm font-medium">Rapat Pemangku Kepentingan</p>
+                                        <p className="text-xs text-muted-foreground">Jatuh tempo dalam 1 minggu</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-4">
@@ -229,8 +229,8 @@ export default function Dashboard() {
                                         <DollarSign className="h-4 w-4 text-purple-500" />
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-medium">Budget Approval Deadline</p>
-                                        <p className="text-xs text-muted-foreground">Due in 2 weeks</p>
+                                        <p className="text-sm font-medium">Batas Persetujuan Anggaran</p>
+                                        <p className="text-xs text-muted-foreground">Jatuh tempo dalam 2 minggu</p>
                                     </div>
                                 </div>
                             </div>

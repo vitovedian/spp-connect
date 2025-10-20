@@ -12,7 +12,7 @@ interface VerifyEmailProps {
 export default function SppVerifyEmail({ status }: VerifyEmailProps) {
     return (
         <>
-            <Head title="Verify email" />
+            <Head title="Verifikasi email" />
             <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-slate-50">
                 <div className="pointer-events-none absolute inset-0 -z-10">
                     <div className="absolute inset-x-[-15%] top-[-45%] h-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.4),transparent_65%)] blur-2xl" />
@@ -20,24 +20,24 @@ export default function SppVerifyEmail({ status }: VerifyEmailProps) {
                 </div>
                 <div className="grid flex-1 items-center gap-12 px-6 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:px-12">
                     <aside className="mx-auto max-w-xl text-center lg:text-left">
-                        <p className="text-xs uppercase tracking-[0.35rem] text-emerald-200/80">Verify email</p>
+                        <p className="text-xs uppercase tracking-[0.35rem] text-emerald-200/80">Verifikasi email</p>
                         <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
-                            Confirm your address to unlock everything
+                            Konfirmasi alamat Anda untuk membuka semua fitur
                         </h1>
                         <p className="mt-5 text-base text-slate-300">
-                            We’ve sent a verification link to your inbox. Confirming your email makes sure
-                            your team can trust every notification that comes from you.
+                            Kami telah mengirim tautan verifikasi ke kotak masuk Anda. Mengonfirmasi email memastikan
+                            tim dapat mempercayai setiap notifikasi yang Anda kirim.
                         </p>
                     </aside>
                     <main className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6 rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-[0_45px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-lg">
                         <header className="space-y-2">
-                            <h2 className="text-2xl font-semibold text-white">Waiting for confirmation</h2>
+                            <h2 className="text-2xl font-semibold text-white">Menunggu konfirmasi</h2>
                             <p className="text-sm text-slate-300">
-                                Didn’t receive the email? We can send another one.
+                                Tidak menerima email? Kami bisa mengirimkannya kembali.
                             </p>
                             {status === 'verification-link-sent' && (
                                 <div className="rounded-md border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium text-emerald-200">
-                                    A fresh verification link is on its way to your inbox.
+                                    Tautan verifikasi terbaru sedang dikirim ke kotak masuk Anda.
                                 </div>
                             )}
                         </header>
@@ -55,10 +55,10 @@ export default function SppVerifyEmail({ status }: VerifyEmailProps) {
                                         {processing && (
                                             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                         )}
-                                        Resend verification email
+                                        Kirim ulang email verifikasi
                                     </Button>
                                     <TextLink href={logout()} className="text-sm text-emerald-200">
-                                        Log out
+                                        Keluar
                                     </TextLink>
                                 </>
                             )}

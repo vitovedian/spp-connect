@@ -14,4 +14,17 @@ form surat tugas :
 
 form nomor surat :
 -Tanggal pengajuan (date)
--Tujuan Surat
+-Pilihan Bendera(?)
+-Tujuan Surat (string)
+-Nama Klien (string)
+-Catatan (long string)
+
+form invoice :
+-Tanggal Pengajuan (date)
+-Tanggal Invoice (date)
+-Kegiatan (string)
+-Tagihan invoice ()
+-PPN (dropdown include,exclude,tanpa ppn)
+change the rincian item to Rincian Invoice OPE
+-Total invoice (tagihan invoice + 11% of tagihan invoice if include ppn + total rincian)
+-Upload Bukti Confirmation Letter (pdf format upload)

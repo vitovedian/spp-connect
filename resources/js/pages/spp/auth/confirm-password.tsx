@@ -9,7 +9,7 @@ import { LoaderCircle } from 'lucide-react';
 export default function SppConfirmPassword() {
     return (
         <>
-            <Head title="Confirm password" />
+            <Head title="Konfirmasi kata sandi" />
             <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-slate-50">
                 <div className="pointer-events-none absolute inset-0 -z-10">
                     <div className="absolute inset-x-[-20%] top-[-40%] h-[420px] rounded-full bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.45),transparent_65%)] blur-2xl" />
@@ -17,20 +17,20 @@ export default function SppConfirmPassword() {
                 </div>
                 <div className="grid flex-1 items-center gap-12 px-6 py-12 lg:grid-cols-[1.05fr_0.95fr] lg:px-12">
                     <aside className="mx-auto max-w-xl text-center lg:text-left">
-                        <p className="text-xs uppercase tracking-[0.35rem] text-pink-200/80">Secure step</p>
+                        <p className="text-xs uppercase tracking-[0.35rem] text-pink-200/80">Langkah aman</p>
                         <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
-                            Confirm your identity to continue
+                            Konfirmasi identitas Anda sebelum melanjutkan
                         </h1>
                         <p className="mt-5 text-base text-slate-300">
-                            For sensitive actions, we ask you to re-enter your password. This keeps your
-                            stakeholders’ data safe and ensures only you can proceed.
+                            Untuk tindakan sensitif, kami meminta Anda memasukkan kembali kata sandi. Ini menjaga data
+                            pemangku kepentingan tetap aman dan memastikan hanya Anda yang dapat melanjutkan.
                         </p>
                     </aside>
                     <main className="relative mx-auto flex w-full max-w-md flex-col rounded-3xl border border-white/10 bg-white/5 p-8 shadow-[0_45px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-lg">
                         <header className="space-y-2 text-center">
-                            <h2 className="text-2xl font-semibold text-white">Confirm password</h2>
+                            <h2 className="text-2xl font-semibold text-white">Konfirmasi kata sandi</h2>
                             <p className="text-sm text-slate-300">
-                                Enter your current password to unlock this action.
+                                Masukkan kata sandi saat ini untuk melanjutkan tindakan ini.
                             </p>
                         </header>
                         <Form {...store.form()} resetOnSuccess={['password']} className="mt-6 flex flex-col gap-6">
@@ -38,7 +38,7 @@ export default function SppConfirmPassword() {
                                 <>
                                     <div className="space-y-2 text-left">
                                         <Label htmlFor="password" className="text-slate-200">
-                                            Password
+                                            Kata sandi
                                         </Label>
                                         <Input
                                             id="password"
@@ -46,7 +46,7 @@ export default function SppConfirmPassword() {
                                             name="password"
                                             autoComplete="current-password"
                                             autoFocus
-                                            placeholder="Enter password"
+                                            placeholder="Masukkan kata sandi"
                                             className="bg-white/10 text-white placeholder:text-slate-400"
                                         />
                                         <InputError message={errors.password} />
@@ -60,7 +60,7 @@ export default function SppConfirmPassword() {
                                         {processing && (
                                             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                         )}
-                                        Confirm password
+                                        Konfirmasi kata sandi
                                     </Button>
                                 </>
                             )}
