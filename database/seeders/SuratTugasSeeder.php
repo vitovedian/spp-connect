@@ -28,7 +28,7 @@ class SuratTugasSeeder extends Seeder
         $payloads = [
             [
                 'letter_number' => '001/SPP-ST/I/2025',
-                'submitted_at' => '2025-01-12',
+                'submitted_at' => '2025-01-12 08:30:00',
                 'event_start' => '2025-01-18',
                 'event_end' => '2025-01-20',
                 'activity_name' => 'Pendampingan Transparansi Data Pemerintah Kota',
@@ -52,7 +52,7 @@ class SuratTugasSeeder extends Seeder
             ],
             [
                 'letter_number' => '002/SPP-ST/I/2025',
-                'submitted_at' => '2025-01-09',
+                'submitted_at' => '2025-01-09 14:15:00',
                 'event_start' => '2025-01-22',
                 'event_end' => '2025-01-22',
                 'activity_name' => 'Sosialisasi Layanan SPP Online',
@@ -75,7 +75,7 @@ class SuratTugasSeeder extends Seeder
             ],
             [
                 'letter_number' => '003/SPP-ST/I/2025',
-                'submitted_at' => '2025-01-05',
+                'submitted_at' => '2025-01-05 09:45:00',
                 'event_start' => '2025-01-25',
                 'event_end' => '2025-01-27',
                 'activity_name' => 'Workshop Transformasi Digital Regional',
@@ -98,8 +98,8 @@ class SuratTugasSeeder extends Seeder
                 'updated_at' => '2025-01-08 16:40:00',
             ],
             [
-                'letter_number' => null,
-                'submitted_at' => '2025-02-02',
+                'letter_number' => '004/SPP-ST/II/2025',
+                'submitted_at' => '2025-02-02 15:10:00',
                 'event_start' => '2025-02-10',
                 'event_end' => '2025-02-12',
                 'activity_name' => 'Pelatihan Onboarding Produk Digital',

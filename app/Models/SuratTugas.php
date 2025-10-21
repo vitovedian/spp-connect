@@ -36,7 +36,7 @@ class SuratTugas extends Model
      * @var array
      */
     protected $casts = [
-        'submitted_at' => 'date',
+        'submitted_at' => 'datetime',
         'event_start' => 'date',
         'event_end' => 'date',
         'pics' => 'array',

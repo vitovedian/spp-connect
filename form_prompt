@@ -29,3 +29,6 @@ form invoice :
 change the rincian item to Rincian Invoice OPE
 -Total invoice (tagihan invoice + 11% of tagihan invoice if include ppn + total rincian)
 -Upload Bukti Confirmation Letter (pdf format upload)
+
+
+the readonly nomor surat input in the surat tugas form can be updated when you hit the "Simpan" button when on the nomor surat form. nomor surat format should be : {nomor surat id}/{bendera}-{initial of tujuan surat (Surat Tugas to ST)}/{month of nomor surat tanggal pengajuan in roman numeral}/{year of nomor surat tanggal pengajuan}

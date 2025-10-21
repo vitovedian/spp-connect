@@ -114,6 +114,20 @@ const normalizeInstructors = (instructors?: ApiSuratTugas['instructors']): Surat
     }));
 };
 
+const formatNomorSuratId = (value: number): string => value.toString().padStart(3, '0');
+
+const combineDateWithCurrentTime = (date: string) => {
+    if (!date) {
+        return '';
+    }
+
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    return `${date} ${hours}:${minutes}:00`;
+};
+
 const transformApiSuratTugas = (item: ApiSuratTugas): SuratTugasRecord => {
     return {
         id: String(item.id),
@@ -164,6 +178,8 @@ export default function SuratTugas() {
 
     // State for nomor surat form
     const [nomorSuratData, setNomorSuratData] = useState({
+        nomorSurat: '',
+        nomorSuratId: '001',
         tanggalPengajuan: '',
         pilihanBendera: '',
         tujuanSurat: '',
@@ -178,17 +194,20 @@ export default function SuratTugas() {
         eventEnd: '',
         activityName: '',
         activityType: '',
-        status: '',
+        statusNote: '',
         pic: '',
         companion: '',
         fee: '',
+        clientName: '',
     });
 
     // State for instruktur list
     const [instrukturList, setInstrukturList] = useState<InstrukturItem[]>([createBlankInstruktur()]);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
 
     const benderaOptions = ['SPP', 'MBS', 'EPU', 'KIM', 'PrimaOne'];
-
     useEffect(() => {
         let isMounted = true;
 
@@ -218,6 +237,18 @@ export default function SuratTugas() {
 
                 setSuratTugas(records.length ? records : []);
 
+                const highestId = records.reduce((max, record) => {
+                    const numericId = Number(record.id);
+                    return Number.isFinite(numericId) ? Math.max(max, numericId) : max;
+                }, 0);
+
+                const suggestedId = formatNomorSuratId((highestId || 0) + 1);
+
+                setNomorSuratData((previous) => ({
+                    ...previous,
+                    nomorSuratId: suggestedId,
+                }));
+
             } catch (error) {
                 console.error('Failed to fetch surat tugas:', error);
             } finally {
@@ -242,6 +273,12 @@ export default function SuratTugas() {
     };
 
     const handleSuratTugasChange = (field: keyof typeof suratTugasData, value: string) => {
+        if (submitError) {
+            setSubmitError(null);
+        }
+        if (submitSuccess) {
+            setSubmitSuccess(null);
+        }
         setSuratTugasData(prev => ({
             ...prev,
             [field]: value
@@ -263,6 +300,9 @@ export default function SuratTugas() {
                     : instruktur,
             ),
         );
+        if (submitError) {
+            setSubmitError(null);
+        }
     };
 
     const handleAddInstruktur = () => {
@@ -280,39 +320,175 @@ export default function SuratTugas() {
         }, 0);
     }, [instrukturList]);
 
+    const romanMonths = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'] as const;
+
     const handleNomorSuratSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Nomor Surat form submitted:', nomorSuratData);
-        alert('Nomor Surat form submitted successfully! (This is a demo)');
-        // Reset form after submission
+
+        const { nomorSuratId, pilihanBendera, tujuanSurat, tanggalPengajuan } = nomorSuratData;
+
+        if (!nomorSuratId.trim() || !pilihanBendera.trim() || !tujuanSurat.trim() || !tanggalPengajuan.trim()) {
+            alert('Mohon lengkapi Nomor Surat ID, Bendera, Tujuan, dan Tanggal Pengajuan.');
+            return;
+        }
+
+        const tujuanInitials = tujuanSurat
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((word) => word[0]?.toUpperCase() ?? '')
+            .join('');
+
+        const parsedDate = new Date(tanggalPengajuan);
+        const isValidDate = !Number.isNaN(parsedDate.getTime());
+        const monthRoman = isValidDate ? romanMonths[parsedDate.getMonth()] ?? '-' : '-';
+        const year = isValidDate ? String(parsedDate.getFullYear()) : '-';
+
+        const formattedNomor = `${nomorSuratId.trim()}/${pilihanBendera}-${tujuanInitials || 'ST'}/${monthRoman}/${year}`;
+
         setNomorSuratData({
+            nomorSurat: formattedNomor,
+            nomorSuratId: nomorSuratId.trim(),
             tanggalPengajuan: '',
             pilihanBendera: '',
             tujuanSurat: '',
             namaKlien: '',
             catatan: ''
         });
-        // Close dialog
+
         setNomorSuratOpen(false);
     };
 
-    const handleSuratTugasSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Surat Tugas form submitted:', suratTugasData, instrukturList);
-        alert('Surat Tugas form submitted successfully! (This is a demo)');
-        // Reset form after submission
-        setSuratTugasData({
-            submittedAt: '',
-            eventStart: '',
-            eventEnd: '',
-            activityName: '',
-            activityType: '',
-            status: '',
-            pic: '',
-            companion: '',
-            fee: ''
+    const getXsrfToken = () => {
+        const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    };
+
+    const ensureCsrfCookie = async () => {
+        if (getXsrfToken()) {
+            return;
+        }
+
+        await fetch('/sanctum/csrf-cookie', {
+            credentials: 'include',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
         });
-        setInstrukturList([createBlankInstruktur()]);
+    };
+
+    const handleSuratTugasSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitError(null);
+        setSubmitSuccess(null);
+
+        const requiredFields: Array<[string, string]> = [
+            ['Tanggal pengajuan', suratTugasData.submittedAt],
+            ['Tanggal mulai kegiatan', suratTugasData.eventStart],
+            ['Tanggal selesai kegiatan', suratTugasData.eventEnd],
+            ['Nama kegiatan', suratTugasData.activityName],
+            ['Jenis kegiatan', suratTugasData.activityType],
+            ['Nomor surat', nomorSuratData.nomorSurat],
+        ];
+
+        const missingField = requiredFields.find(([, value]) => !value.trim());
+        if (missingField) {
+            setSubmitError(`Mohon lengkapi kolom ${missingField[0]}.`);
+            return;
+        }
+
+        setSubmitLoading(true);
+
+        const instructors = instrukturList
+            .filter((instruktur) => instruktur.name.trim())
+            .map((instruktur) => ({
+                name: instruktur.name.trim(),
+                fee: Number(instruktur.fee) || 0,
+            }));
+
+        const submittedAtWithTime = combineDateWithCurrentTime(suratTugasData.submittedAt);
+
+        const payload = {
+            submitted_at: submittedAtWithTime,
+            event_start: suratTugasData.eventStart,
+            event_end: suratTugasData.eventEnd,
+            activity_name: suratTugasData.activityName.trim(),
+            activity_type: suratTugasData.activityType,
+            status: 'Draft',
+            status_note: suratTugasData.statusNote.trim() || null,
+            pic: suratTugasData.pic || null,
+            companion_name: suratTugasData.companion.trim() || null,
+            companion_fee: suratTugasData.fee ? Number(suratTugasData.fee) : null,
+            client_name: suratTugasData.clientName.trim() || null,
+            letter_number: nomorSuratData.nomorSurat?.trim() || null,
+            instructors,
+        };
+
+        try {
+            await ensureCsrfCookie();
+
+            const response = await fetch('/api/surat-tugas', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-XSRF-TOKEN': getXsrfToken() ?? '',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const body = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                if (response.status === 422 && body?.errors) {
+                    const firstError = Object.values(body.errors)[0] as string[] | undefined;
+                    throw new Error(firstError?.[0] ?? 'Validasi tidak berhasil. Mohon periksa kembali data Anda.');
+                }
+
+                throw new Error(body?.message ?? 'Gagal menyimpan surat tugas.');
+            }
+
+            if (!body?.data) {
+                throw new Error('Respon server tidak valid.');
+            }
+
+            const newRecord = transformApiSuratTugas(body.data as ApiSuratTugas);
+            setSuratTugas((previous) => [newRecord, ...previous]);
+
+            setSubmitSuccess('Surat tugas berhasil diajukan.');
+            setSuratTugasData({
+                submittedAt: '',
+                eventStart: '',
+                eventEnd: '',
+                activityName: '',
+                activityType: '',
+                statusNote: '',
+                pic: '',
+                companion: '',
+                fee: '',
+                clientName: '',
+            });
+            setInstrukturList([createBlankInstruktur()]);
+            const nextId = formatNomorSuratId((Number(newRecord.id) || 0) + 1);
+            setNomorSuratData({
+                nomorSurat: '',
+                nomorSuratId: nextId,
+                tanggalPengajuan: '',
+                pilihanBendera: '',
+                tujuanSurat: '',
+                namaKlien: '',
+                catatan: ''
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                setSubmitError(error.message);
+            } else {
+                setSubmitError('Terjadi kesalahan saat menyimpan surat tugas.');
+            }
+        } finally {
+            setSubmitLoading(false);
+        }
     };
 
     const visibleRequests = useMemo(() => {
@@ -387,7 +563,7 @@ export default function SuratTugas() {
                                 <DialogHeader>
                                     <DialogTitle>Formulir Surat Tugas</DialogTitle>
                                     <DialogDescription>
-                                        Form ini masih berupa placeholder. Data tidak akan disimpan.
+                                        Lengkapi detail surat tugas berikut untuk menyimpannya ke basis data aplikasi.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="flex justify-end">
@@ -401,11 +577,24 @@ export default function SuratTugas() {
                                             <DialogHeader>
                                                 <DialogTitle>Nomor Surat</DialogTitle>
                                                 <DialogDescription>
-                                                    Form ini hanya contoh untuk menerbitkan nomor surat secara manual.
+                                                    Kelola nomor surat yang diterbitkan secara manual sebelum disimpan ke basis data.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <form onSubmit={handleNomorSuratSubmit}>
                                                 <div className="space-y-4">
+                                                    <div className="grid gap-2">
+                                                        <Label htmlFor="nomorSuratId">
+                                                            Nomor Surat ID <span className="text-destructive">*</span>
+                                                        </Label>
+                                                        <Input
+                                                            id="nomorSuratId"
+                                                            placeholder="Contoh: 001"
+                                                            value={nomorSuratData.nomorSuratId}
+                                                            onChange={(e) => handleNomorSuratChange('nomorSuratId', e.target.value)}
+                                                            required
+                                                            readOnly
+                                                        />
+                                                    </div>
                                                     <div className="grid gap-2">
                                                         <Label htmlFor="tanggalPengajuan">
                                                             Tanggal Pengajuan <span className="text-destructive">*</span>
@@ -475,7 +664,7 @@ export default function SuratTugas() {
                                                 </div>
                                                 <DialogFooter className="sm:justify-between">
                                                     <p className="text-xs text-muted-foreground mt-4">
-                                                        Nomor surat belum dapat disimpan pada versi demo.
+                                                        Nomor surat akan digunakan otomatis saat formulir disimpan.
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-4">
                                                         <DialogClose asChild>
@@ -490,6 +679,16 @@ export default function SuratTugas() {
                                 </div>
                                 <form onSubmit={handleSuratTugasSubmit}>
                                     <div className="space-y-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="nomorSurat">Nomor Surat</Label>
+                                            <Input
+                                                id="nomorSurat"
+                                                value={nomorSuratData.nomorSurat ?? ''}
+                                                readOnly
+                                                placeholder="Nomor surat akan dibuat otomatis"
+                                                className="bg-muted/50"
+                                            />
+                                        </div>
                                         <div className="grid gap-4 sm:grid-cols-3">
                                         <div className="grid gap-2">
                                             <Label htmlFor="submittedAt">Tanggal Pengajuan</Label>
@@ -562,6 +761,15 @@ export default function SuratTugas() {
                                     </div>
                                     </div>
                                     <div className="grid gap-2">
+                                        <Label htmlFor="clientName">Nama Klien (Opsional)</Label>
+                                        <Input
+                                            id="clientName"
+                                            placeholder="Contoh: PT ABC Indonesia"
+                                            value={suratTugasData.clientName}
+                                            onChange={(e) => handleSuratTugasChange('clientName', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
                                         <Label htmlFor="companion">Nama Pendamping (Opsional)</Label>
                                         <Input
                                             id="companion"
@@ -578,6 +786,16 @@ export default function SuratTugas() {
                                             type="number"
                                             value={suratTugasData.fee}
                                             onChange={(e) => handleSuratTugasChange('fee', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="statusNote">Catatan Status (Opsional)</Label>
+                                        <textarea
+                                            id="statusNote"
+                                            value={suratTugasData.statusNote}
+                                            onChange={(e) => handleSuratTugasChange('statusNote', e.target.value)}
+                                            className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                            placeholder="Tambahkan catatan terkait status terakhir."
                                         />
                                     </div>
                                     <div className="grid gap-2">
@@ -652,16 +870,24 @@ export default function SuratTugas() {
                                             readOnly
                                         />
                                     </div>
+                                    {submitError && (
+                                        <p className="text-sm text-destructive">{submitError}</p>
+                                    )}
+                                    {submitSuccess && (
+                                        <p className="text-sm text-emerald-600">{submitSuccess}</p>
+                                    )}
                                 </div>
                                 <DialogFooter className="sm:justify-between">
                                     <p className="text-xs text-muted-foreground mt-4">
-                                        Mode demo: pengajuan belum aktif.
+                                        Data yang disimpan akan langsung muncul di daftar permohonan.
                                     </p>
                                     <div className="flex items-center gap-2 mt-4">
                                         <DialogClose asChild>
                                             <Button variant="outline" type="button">Tutup</Button>
                                         </DialogClose>
-                                        <Button type="submit">Kirim</Button>
+                                        <Button type="submit" disabled={submitLoading}>
+                                            {submitLoading ? 'Menyimpan...' : 'Kirim'}
+                                        </Button>
                                     </div>
                                 </DialogFooter>
                             </form>
@@ -674,7 +900,7 @@ export default function SuratTugas() {
                     <CardHeader className="flex flex-col gap-1">
                         <CardTitle>Daftar Permohonan</CardTitle>
                         <CardDescription>
-                            Data masih bersifat statis sebagai contoh tampilan daftar pengajuan surat tugas.
+                            Lihat seluruh pengajuan surat tugas yang tersimpan di basis data.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
