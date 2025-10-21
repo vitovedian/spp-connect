@@ -25,12 +25,12 @@ export default function SppWelcome() {
                         SPP Connect
                     </p>
                     <h1 className="mt-3 text-4xl font-semibold md:text-5xl">
-                        Selamat datang di pengalaman SPP
+                        Selamat datang di SPP Connect
                     </h1>
                     <p className="mt-4 max-w-xl text-balance text-sm leading-relaxed text-muted-foreground md:text-base">
-                        Mulailah dengan menjelajahi dasbor, mengelola para pemangku kepentingan,
-                        dan berkolaborasi dengan tim Anda secara langsung. Kami menyiapkan alur kerja
-                        yang ringkas agar Anda bisa fokus pada hal terpenting.
+                        Akses dasbor Anda, kelola hubungan strategis, dan sinergikan kolaborasi tim
+                        dalam satu platform terpadu. Kami hadirkan pengalaman yang memungkinkan
+                        Anda mengutamakan hal-hal yang benar-benar penting.
                     </p>
                 </div>
                 <div className="z-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">

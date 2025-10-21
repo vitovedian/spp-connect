@@ -27,11 +27,11 @@ export default function SppRegister({ mustVerifyEmail, terms }: RegisterProps) {
                     <aside className="mx-auto max-w-xl text-center lg:text-left">
                         <p className="text-xs uppercase tracking-[0.35rem] text-indigo-200/80">SPP Connect</p>
                         <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
-                            Mulai inisiatif pemangku kepentingan Anda hari ini
+                            Daftar untuk Mengelola Sistem Anda Secara Efektif
                         </h1>
                         <p className="mt-5 text-base text-slate-300">
-                            Bangun relasi yang bermakna, pantau dampak, dan kolaborasi dengan tim Anda secara langsung.
-                            Buat akun untuk membuka akses ke ruang kerja SPP.
+                            Bangun kerangka kerja sistem, pantau keterlibatan, dan tingkatkan efisiensi tim Anda.
+                            Registrasi akun untuk mengakses platform manajemen.
                         </p>
                     </aside>
                     <main className="relative mx-auto flex w-full max-w-lg flex-col rounded-3xl border border-white/10 bg-white/5 p-8 shadow-[0_45px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-lg">
@@ -44,9 +44,9 @@ export default function SppRegister({ mustVerifyEmail, terms }: RegisterProps) {
                             {({ processing, errors }) => (
                                 <>
                                     <header className="space-y-2 text-center">
-                                        <h2 className="text-2xl font-semibold text-white">Buat akun SPP Anda</h2>
+                                        <h2 className="text-2xl font-semibold text-white">Buat Akun Manajemen Stakeholder</h2>
                                         <p className="text-sm text-slate-300">
-                                            Lengkapi detail di bawah ini untuk memulai.
+                                            Isi data yang diperlukan untuk memulai pengelolaan.
                                         </p>
                                     </header>
 

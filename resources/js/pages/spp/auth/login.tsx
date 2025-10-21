@@ -28,11 +28,11 @@ export default function SppLogin({ status, canResetPassword }: LoginProps) {
                     <aside className="mx-auto max-w-xl text-center lg:text-left">
                         <p className="text-xs uppercase tracking-[0.35rem] text-sky-300/80">SPP Connect</p>
                         <h1 className="mt-4 text-4xl font-semibold leading-tight text-white md:text-5xl">
-                            Terhubung lagi dengan pemangku kepentingan tanpa hambatan
+                            Akses Sistem Manajemen Anda
                         </h1>
                         <p className="mt-5 text-base text-slate-300">
-                            Selaraskan kolaborasi, kelola jangkauan, dan lanjutkan setiap percakapan.
-                            Masuk kembali dan lanjutkan pekerjaan Anda tepat di titik terakhir.
+                            Monitor data, kelola komunikasi, dan kontrol proyek Anda.
+                            Login kembali untuk melanjutkan ke dashboard.
                         </p>
                     </aside>
                     <main className="relative mx-auto flex w-full max-w-md flex-col rounded-3xl border border-white/10 bg-white/5 p-8 shadow-[0_45px_120px_-60px_rgba(15,23,42,0.8)] backdrop-blur-lg">
@@ -44,9 +44,9 @@ export default function SppLogin({ status, canResetPassword }: LoginProps) {
                             {({ processing, errors }) => (
                                 <>
                                     <header className="space-y-2 text-center">
-                                        <h2 className="text-2xl font-semibold text-white">Selamat datang kembali</h2>
+                                        <h2 className="text-2xl font-semibold text-white">Lanjutkan Aktivitas</h2>
                                         <p className="text-sm text-slate-300">
-                                            Masukkan kredensial Anda untuk mengakses ruang kerja.
+                                            Masukkan kredensial Anda untuk mengakses sistem.
                                         </p>
                                         {status && (
                                             <div className="rounded-md border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-xs font-medium text-emerald-200">
