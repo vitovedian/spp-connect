@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import {
     Card,
@@ -36,7 +36,6 @@ import {
     formatLetterNumber,
     formatTime,
     statusVariantMap,
-    suratTugasRequests,
 } from '@/lib/surat-tugas';
 
 const progressStages = ['Draft', 'Pengajuan', 'Persetujuan', 'Selesai'];
@@ -45,6 +44,99 @@ const statusFilterMap: Record<Exclude<'semua' | 'menunggu' | 'disetujui' | 'revi
     menunggu: 'Menunggu Persetujuan',
     disetujui: 'Disetujui',
     revisi: 'Revisi',
+};
+
+type ApiSuratTugas = {
+    id: number | string;
+    letter_number: string | null;
+    submitted_at: string | null;
+    event_start: string | null;
+    event_end: string | null;
+    activity_name: string;
+    activity_type: 'offline' | 'online';
+    status: 'Draft' | 'Pengajuan' | 'Persetujuan' | 'Selesai' | 'Menunggu Persetujuan' | 'Disetujui' | 'Revisi';
+    status_note?: string | null;
+    pic?: string | null;
+    companion_name?: string | null;
+    companion_fee?: number | null;
+    client_name?: string | null;
+    pics?: Array<{ id?: string; name?: string; role?: string | null }>;
+    instructors?: Array<{ name?: string; fee?: number | null }>;
+    created_at?: string | null;
+    updated_at?: string | null;
+    status_updated_by?: string | null;
+    status_updated_at?: string | null;
+};
+
+interface SuratTugasRecord {
+    id: string;
+    letterNumber: string | null;
+    submittedAt: string | null;
+    eventStart: string | null;
+    eventEnd: string | null;
+    activityName: string;
+    activityType: 'offline' | 'online';
+    status: 'Draft' | 'Pengajuan' | 'Persetujuan' | 'Selesai' | 'Menunggu Persetujuan' | 'Disetujui' | 'Revisi';
+    statusNote?: string | null;
+    pic?: string | null;
+    companionName?: string | null;
+    companionFee?: number | null;
+    clientName?: string | null;
+    pics: Array<{ id: string; name: string; role?: string | null }>;
+    instructors: Array<{ name: string; fee: number }>;
+    createdBy?: string | null;
+    statusUpdatedBy?: string | null;
+    statusUpdatedAt?: string | null;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+}
+
+const normalizePics = (pics?: ApiSuratTugas['pics']): SuratTugasRecord['pics'] => {
+    if (!pics?.length) {
+        return [];
+    }
+
+    return pics.map((pic, index) => ({
+        id: pic?.id ?? `${pic?.name ?? 'pic'}-${index}`,
+        name: pic?.name ?? 'Tidak diketahui',
+        role: pic?.role ?? null,
+    }));
+};
+
+const normalizeInstructors = (instructors?: ApiSuratTugas['instructors']): SuratTugasRecord['instructors'] => {
+    if (!instructors?.length) {
+        return [];
+    }
+
+    return instructors.map((instructor) => ({
+        name: instructor?.name ?? 'Instruktur',
+        fee: Number(instructor?.fee ?? 0),
+    }));
+};
+
+const transformApiSuratTugas = (item: ApiSuratTugas): SuratTugasRecord => {
+    return {
+        id: String(item.id),
+        letterNumber: item.letter_number,
+        submittedAt: item.submitted_at,
+        eventStart: item.event_start,
+        eventEnd: item.event_end,
+        activityName: item.activity_name,
+        activityType: item.activity_type,
+        status: item.status,
+        statusNote: item.status_note ?? null,
+        pic: item.pic ?? null,
+        companionName: item.companion_name ?? null,
+        companionFee: typeof item.companion_fee === 'number' ? item.companion_fee : null,
+        clientName: item.client_name ?? null,
+        pics: normalizePics(item.pics),
+        instructors: normalizeInstructors(item.instructors),
+        createdBy: item.pic ?? null,
+        statusUpdatedBy: item.status_updated_by ?? null,
+        statusUpdatedAt: item.status_updated_at ?? item.updated_at ?? null,
+        createdAt: item.created_at ?? null,
+        updatedAt: item.updated_at ?? null,
+    };
 };
 
 interface InstrukturItem {
@@ -60,9 +152,11 @@ const createBlankInstruktur = (): InstrukturItem => ({
 });
 
 export default function SuratTugas() {
+    const [suratTugas, setSuratTugas] = useState<SuratTugasRecord[]>([]);
+    const [loading, setLoading] = useState(false);
     const [isNomorSuratOpen, setNomorSuratOpen] = useState(false);
     const [isDetailOpen, setDetailOpen] = useState(false);
-    const [detailRequest, setDetailRequest] = useState<(typeof suratTugasRequests)[number] | null>(null);
+    const [detailRequest, setDetailRequest] = useState<SuratTugasRecord | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortField, setSortField] = useState<'submittedAt' | 'activityName' | 'totalFee'>('submittedAt');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
@@ -94,6 +188,51 @@ export default function SuratTugas() {
     const [instrukturList, setInstrukturList] = useState<InstrukturItem[]>([createBlankInstruktur()]);
 
     const benderaOptions = ['SPP', 'MBS', 'EPU', 'KIM', 'PrimaOne'];
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchSuratTugas = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('/api/surat-tugas', {
+                    credentials: 'include',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const payload = await response.json();
+                if (!isMounted) {
+                    return;
+                }
+
+                const records = Array.isArray(payload?.data)
+                    ? (payload.data as ApiSuratTugas[]).map(transformApiSuratTugas)
+                    : [];
+
+                setSuratTugas(records.length ? records : []);
+
+            } catch (error) {
+                console.error('Failed to fetch surat tugas:', error);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchSuratTugas();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleNomorSuratChange = (field: keyof typeof nomorSuratData, value: string) => {
         setNomorSuratData(prev => ({
@@ -179,7 +318,7 @@ export default function SuratTugas() {
     const visibleRequests = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
 
-        const filtered = suratTugasRequests.filter((request) => {
+        const filtered = suratTugas.filter((request) => {
             const matchesStatus =
                 statusFilter === 'semua' ||
                 request.status === statusFilterMap[statusFilter as keyof typeof statusFilterMap];
@@ -196,7 +335,7 @@ export default function SuratTugas() {
                 (request.letterNumber ?? formatLetterNumber(request)).toLowerCase(),
                 request.activityName.toLowerCase(),
                 request.status.toLowerCase(),
-                request.createdBy.toLowerCase(),
+                (request.createdBy ?? '').toLowerCase(),
                 request.pics
                     .map((pic) => [pic.name, pic.role].filter(Boolean).join(' ').toLowerCase())
                     .join(' '),
@@ -209,7 +348,9 @@ export default function SuratTugas() {
             let result = 0;
 
             if (sortField === 'submittedAt') {
-                result = new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+                const aTime = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+                const bTime = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+                result = aTime - bTime;
             } else if (sortField === 'activityName') {
                 result = a.activityName.localeCompare(b.activityName, 'id-ID', { sensitivity: 'base' });
             } else if (sortField === 'totalFee') {
@@ -220,7 +361,7 @@ export default function SuratTugas() {
         });
 
         return sorted;
-    }, [searchTerm, sortField, sortDirection, statusFilter]);
+    }, [searchTerm, sortField, sortDirection, statusFilter, suratTugas]);
 
     return (
         <div className="min-h-screen bg-background pl-4 lg:pl-4">
@@ -349,6 +490,7 @@ export default function SuratTugas() {
                                 </div>
                                 <form onSubmit={handleSuratTugasSubmit}>
                                     <div className="space-y-4">
+                                        <div className="grid gap-4 sm:grid-cols-3">
                                         <div className="grid gap-2">
                                             <Label htmlFor="submittedAt">Tanggal Pengajuan</Label>
                                             <Input 
@@ -376,6 +518,7 @@ export default function SuratTugas() {
                                             onChange={(e) => handleSuratTugasChange('eventEnd', e.target.value)}
                                         />
                                     </div>
+                                    </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="activityName">Nama Kegiatan</Label>
                                         <Input
@@ -385,6 +528,7 @@ export default function SuratTugas() {
                                             onChange={(e) => handleSuratTugasChange('activityName', e.target.value)}
                                         />
                                     </div>
+                                    <div className="grid gap-4 sm:grid-cols-2">
                                     <div className="grid gap-2">
                                         <Label htmlFor="activityType">Jenis Kegiatan</Label>
                                         <Select 
@@ -397,24 +541,6 @@ export default function SuratTugas() {
                                             <SelectContent>
                                                 <SelectItem value="offline">Luring</SelectItem>
                                                 <SelectItem value="online">Daring</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="status">Status Permohonan</Label>
-                                        <Select 
-                                            value={suratTugasData.status} 
-                                            onValueChange={(value) => handleSuratTugasChange('status', value)}
-                                        >
-                                            <SelectTrigger id="status">
-                                                <SelectValue placeholder="Pilih status" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="draft">Draft</SelectItem>
-                                                <SelectItem value="menunggu">Menunggu Persetujuan</SelectItem>
-                                                <SelectItem value="disetujui">Disetujui</SelectItem>
-                                                <SelectItem value="revisi">Revisi</SelectItem>
-                                                <SelectItem value="ditolak">Ditolak</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -433,6 +559,7 @@ export default function SuratTugas() {
                                                 <SelectItem value="wilayah">Tim Koordinasi Wilayah</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </div>
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="companion">Nama Pendamping (Opsional)</Label>
@@ -620,9 +747,15 @@ export default function SuratTugas() {
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm">
-                                    {visibleRequests.length === 0 ? (
+                                    {loading ? (
                                         <tr>
-                                            <td colSpan={7} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                                            <td colSpan={8} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                                                Memuat data surat tugas...
+                                            </td>
+                                        </tr>
+                                    ) : visibleRequests.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="px-4 py-6 text-center text-sm text-muted-foreground">
                                                 Tidak ada permohonan yang cocok dengan pencarian Anda.
                                             </td>
                                         </tr>
@@ -648,16 +781,23 @@ export default function SuratTugas() {
                                             <td className="px-4 py-3 font-medium">{request.activityName}</td>
                                             <td className="px-4 py-3 text-sm">
                                                 <div className="space-y-1">
-                                            {request.pics.map((pic) => (
-                                                <div key={`${request.id}-${pic.id}`} className="space-y-1 border-b border-border/40 pb-2 last:border-b-0 last:pb-0">
-                                                    <span className="font-medium text-foreground">{pic.name}</span>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {pic.role ?? 'Peran belum diisi'}
-                                                    </p>
+                                                    {request.pics.length === 0 ? (
+                                                        <p className="text-xs text-muted-foreground">Belum ada PIC terdaftar.</p>
+                                                    ) : (
+                                                        request.pics.map((pic) => (
+                                                            <div
+                                                                key={`${request.id}-${pic.id}`}
+                                                                className="space-y-1 border-b border-border/40 pb-2 last:border-b-0 last:pb-0"
+                                                            >
+                                                                <span className="font-medium text-foreground">{pic.name}</span>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {pic.role ?? 'Peran belum diisi'}
+                                                                </p>
+                                                            </div>
+                                                        ))
+                                                    )}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </td>
+                                            </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex flex-col gap-1">
                                                     <Badge variant={statusVariantMap[request.status] ?? 'outline'}>
@@ -754,7 +894,7 @@ export default function SuratTugas() {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Dibuat Oleh</p>
-                                        <p className="font-semibold">{detailRequest.createdBy}</p>
+                                        <p className="font-semibold">{detailRequest.createdBy ?? 'Tidak diketahui'}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground">Tanggal Pengajuan</p>
@@ -831,7 +971,10 @@ export default function SuratTugas() {
                                         )}
                                         <div className="mt-2 text-xs text-muted-foreground">
                                             <p>
-                                                Perubahan terakhir oleh <span className="font-medium text-foreground">{detailRequest.statusUpdatedBy}</span>
+                                                Perubahan terakhir oleh{' '}
+                                                <span className="font-medium text-foreground">
+                                                    {detailRequest.statusUpdatedBy ?? 'Tidak diketahui'}
+                                                </span>
                                             </p>
                                             <p>
                                                 pada {formatDate(detailRequest.statusUpdatedAt)}

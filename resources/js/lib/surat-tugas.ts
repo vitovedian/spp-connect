@@ -110,16 +110,52 @@ export const formatCurrency = (value: number | null) => {
     }).format(value);
 };
 
-export const calculateTotalFee = (request: (typeof suratTugasRequests)[number]) => {
-    const companion = request.companionFee ?? 0;
-    const instructorsTotal = request.instructors.reduce((total, instructor) => total + instructor.fee, 0);
+type FeeSource = {
+    companionFee?: number | null;
+    companion_fee?: number | null;
+    instructors?: Array<{ fee?: number | null }> | null;
+};
+
+export const calculateTotalFee = (request: FeeSource) => {
+    const companion =
+        typeof request.companionFee === 'number'
+            ? request.companionFee
+            : typeof request.companion_fee === 'number'
+              ? request.companion_fee
+              : 0;
+
+    const instructors = request.instructors ?? [];
+    const instructorsTotal = instructors.reduce((total, instructor) => {
+        const fee = typeof instructor.fee === 'number' ? instructor.fee : 0;
+        return total + fee;
+    }, 0);
 
     return companion + instructorsTotal;
 };
 
-export const formatLetterNumber = (request: (typeof suratTugasRequests)[number]) => {
-    const [initial, year, sequence] = request.id.split('-');
-    const monthRoman = romanMonths[new Date(request.submittedAt).getMonth()] ?? '-';
+type LetterNumberLike = {
+    id: string | number;
+    submitted_at?: string;
+    submittedAt?: string;
+    letter_number?: string | null;
+    letterNumber?: string | null;
+};
+
+export const formatLetterNumber = (request: LetterNumberLike) => {
+    const existingLetterNumber = request.letter_number ?? request.letterNumber;
+    if (existingLetterNumber) {
+        return existingLetterNumber;
+    }
+
+    const idParts = String(request.id ?? '').split('-');
+    if (idParts.length < 3) {
+        return String(request.id ?? '–');
+    }
+
+    const [initial, year, sequence] = idParts;
+    const submitted = request.submitted_at ?? request.submittedAt;
+    const monthRoman =
+        submitted ? romanMonths[new Date(submitted).getMonth()] ?? '-' : '-';
 
     return `${sequence}/${'SPP'}-${initial}/${monthRoman}/${year}`;
 };

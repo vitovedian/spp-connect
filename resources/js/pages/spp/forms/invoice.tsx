@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import {
     Card,
@@ -42,13 +42,14 @@ interface InvoiceOpeItem {
 interface InvoiceTimelineEvent {
     label: string;
     date: string;
-    note?: string;
+    note?: string | null;
 }
 
 interface InvoiceRecord {
     id: string;
-    submissionDate: string;
-    invoiceDate: string;
+    invoiceNumber: string;
+    submissionDate: string | null;
+    invoiceDate: string | null;
     activityName: string;
     baseAmount: number;
     vatOption: VatOption;
@@ -61,9 +62,39 @@ interface InvoiceRecord {
     paymentLink?: string | null;
 }
 
-const invoiceRecords: InvoiceRecord[] = [
+type ApiInvoiceOpeItem = {
+    description?: string | null;
+    quantity?: number | string | null;
+    unit_price?: number | string | null;
+};
+
+type ApiInvoiceTimelineEvent = {
+    label?: string | null;
+    date?: string | null;
+    note?: string | null;
+};
+
+type ApiInvoice = {
+    id: number | string;
+    invoice_number?: string | null;
+    submission_date?: string | null;
+    invoice_date?: string | null;
+    activity_name: string;
+    base_amount?: number | string | null;
+    vat_option: VatOption;
+    amount_paid?: number | string | null;
+    status: 'Pending' | 'Partial' | 'Paid' | 'Overdue';
+    status_note?: string | null;
+    ope_items?: ApiInvoiceOpeItem[] | null;
+    timeline?: ApiInvoiceTimelineEvent[] | null;
+    notes?: string | null;
+    payment_link?: string | null;
+};
+
+const demoInvoices: InvoiceRecord[] = [
     {
         id: 'inv-2025-001',
+        invoiceNumber: 'INV-2025-001',
         submissionDate: '2025-01-10T09:10:00+07:00',
         invoiceDate: '2025-01-12T08:15:00+07:00',
         activityName: 'Transformasi Digital 2025',
@@ -87,6 +118,7 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2025-002',
+        invoiceNumber: 'INV-2025-002',
         submissionDate: '2025-01-22T11:40:00+07:00',
         invoiceDate: '2025-01-25T08:25:00+07:00',
         activityName: 'Monitoring Evaluasi Wilayah',
@@ -109,6 +141,7 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2024-219',
+        invoiceNumber: 'INV-2024-219',
         submissionDate: '2024-11-14T15:00:00+07:00',
         invoiceDate: '2024-11-16T08:10:00+07:00',
         activityName: 'Program Penguatan Literasi',
@@ -128,6 +161,7 @@ const invoiceRecords: InvoiceRecord[] = [
     },
     {
         id: 'inv-2024-207',
+        invoiceNumber: 'INV-2024-207',
         submissionDate: '2024-10-02T14:45:00+07:00',
         invoiceDate: '2024-10-05T08:20:00+07:00',
         activityName: 'Program Pemberdayaan Digital',
@@ -149,6 +183,56 @@ const invoiceRecords: InvoiceRecord[] = [
         notes: 'Perlu eskalasi ke pimpinan bila belum dibayar akhir pekan ini.',
     },
 ];
+
+const toNumber = (value: unknown, fallback = 0): number => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeOpeItems = (items?: ApiInvoiceOpeItem[] | null): InvoiceOpeItem[] => {
+    if (!items?.length) {
+        return [];
+    }
+
+    return items.map((item, index) => ({
+        description: item?.description ?? `Item ${index + 1}`,
+        quantity: toNumber(item?.quantity, 0),
+        unitPrice: toNumber(item?.unit_price, 0),
+    }));
+};
+
+const normalizeTimeline = (timeline?: ApiInvoiceTimelineEvent[] | null): InvoiceTimelineEvent[] => {
+    if (!timeline?.length) {
+        return [];
+    }
+
+    return timeline
+        .map((event) => ({
+            label: event?.label ?? 'Kegiatan',
+            date: event?.date ?? '',
+            note: event?.note ?? null,
+        }))
+        .filter((event) => Boolean(event.date));
+};
+
+const transformApiInvoice = (invoice: ApiInvoice): InvoiceRecord => ({
+    id: String(invoice.id),
+    invoiceNumber: invoice.invoice_number ?? String(invoice.id),
+    submissionDate: invoice.submission_date ?? null,
+    invoiceDate: invoice.invoice_date ?? null,
+    activityName: invoice.activity_name,
+    baseAmount: toNumber(invoice.base_amount, 0),
+    vatOption: invoice.vat_option,
+    amountPaid: toNumber(invoice.amount_paid, 0),
+    status: invoice.status,
+    statusNote: invoice.status_note ?? null,
+    opeItems: normalizeOpeItems(invoice.ope_items),
+    timeline: normalizeTimeline(invoice.timeline),
+    notes: invoice.notes ?? null,
+    paymentLink: invoice.payment_link ?? null,
+});
+
+const initialDemoInvoices: InvoiceRecord[] = demoInvoices;
 
 const invoiceStatusVariant: Record<InvoiceRecord['status'], 'default' | 'secondary' | 'outline' | 'destructive'> = {
     Pending: 'outline',
@@ -192,14 +276,16 @@ const getOutstandingAmount = (invoice: InvoiceRecord): number =>
     Math.max(getTotalInvoiceAmount(invoice) - invoice.amountPaid, 0);
 
 const formatInvoiceNumber = (invoice: InvoiceRecord): string => {
-    const segments = invoice.id.split('-');
+    const source = invoice.invoiceNumber || invoice.id;
+    const segments = source.split('-');
 
     if (segments.length !== 3) {
-        return invoice.id.toUpperCase();
+        return source.toUpperCase();
     }
 
     const [prefix, year, sequence] = segments;
-    const monthRoman = romanMonths[new Date(invoice.invoiceDate).getMonth()] ?? '-';
+    const monthIndex = invoice.invoiceDate ? new Date(invoice.invoiceDate).getMonth() : NaN;
+    const monthRoman = Number.isFinite(monthIndex) ? romanMonths[monthIndex] ?? '-' : '-';
     const prefixUpper = prefix.toUpperCase();
 
     return `${sequence}/${'SPP'}-${prefixUpper}/${monthRoman}/${year}`;
@@ -222,6 +308,8 @@ const createBlankItem = (): DraftInvoiceItem => ({
 });
 
 export default function InvoiceList() {
+    const [invoices, setInvoices] = useState<InvoiceRecord[]>(initialDemoInvoices);
+    const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | InvoiceRecord['status']>('all');
     const [sortField, setSortField] = useState<'submissionDate' | 'invoiceDate' | 'activityName' | 'total'>('invoiceDate');
@@ -243,8 +331,52 @@ export default function InvoiceList() {
     const [confirmationLetterFile, setConfirmationLetterFile] = useState<File | null>(null);
     const [fileInputKey, setFileInputKey] = useState<number>(Date.now());
 
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchInvoices = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch('/api/invoices', {
+                    credentials: 'include',
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const payload = await response.json();
+                if (!isMounted) {
+                    return;
+                }
+
+                const records = Array.isArray(payload?.data)
+                    ? (payload.data as ApiInvoice[]).map(transformApiInvoice)
+                    : [];
+
+                setInvoices(records.length ? records : []);
+            } catch (error) {
+                console.error('Failed to fetch invoices:', error);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchInvoices();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     const summary = useMemo(() => {
-        return invoiceRecords.reduce(
+        return invoices.reduce(
             (acc, invoice) => {
                 const totalAmount = getTotalInvoiceAmount(invoice);
                 const outstanding = getOutstandingAmount(invoice);
@@ -263,12 +395,12 @@ export default function InvoiceList() {
                 overdueCount: 0,
             },
         );
-    }, []);
+    }, [invoices]);
 
     const filteredInvoices = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
 
-        const filtered = invoiceRecords.filter((invoice) => {
+        const filtered = invoices.filter((invoice) => {
             const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
 
             if (!matchesStatus) {
@@ -298,7 +430,9 @@ export default function InvoiceList() {
             let result = 0;
 
             if (sortField === 'submissionDate' || sortField === 'invoiceDate') {
-                result = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime();
+                const aDate = a[sortField] ? new Date(a[sortField]!).getTime() : 0;
+                const bDate = b[sortField] ? new Date(b[sortField]!).getTime() : 0;
+                result = aDate - bDate;
             } else if (sortField === 'activityName') {
                 result = a.activityName.localeCompare(b.activityName, 'id-ID', { sensitivity: 'base' });
             } else if (sortField === 'total') {
@@ -309,7 +443,7 @@ export default function InvoiceList() {
         });
 
         return sorted;
-    }, [searchTerm, statusFilter, sortField, sortDirection]);
+    }, [invoices, searchTerm, statusFilter, sortField, sortDirection]);
 
     const openInvoiceDetail = (invoice: InvoiceRecord) => {
         setSelectedInvoice(invoice);
@@ -872,7 +1006,13 @@ export default function InvoiceList() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm">
-                                {filteredInvoices.length === 0 ? (
+                                {loading ? (
+                                    <tr>
+                                        <td colSpan={10} className="px-4 py-6 text-center text-sm text-muted-foreground">
+                                            Memuat data invoice...
+                                        </td>
+                                    </tr>
+                                ) : filteredInvoices.length === 0 ? (
                                     <tr>
                                         <td colSpan={10} className="px-4 py-6 text-center text-sm text-muted-foreground">
                                             Tidak ada invoice yang cocok dengan filter Anda.
@@ -884,6 +1024,8 @@ export default function InvoiceList() {
                                         const formattedNumber = formatInvoiceNumber(invoice);
                                         const opeTotal = getOpeTotalAmount(invoice);
                                         const totalAmount = getTotalInvoiceAmount(invoice);
+                                        const submissionDate = invoice.submissionDate ? new Date(invoice.submissionDate) : null;
+                                        const invoiceDateValue = invoice.invoiceDate ? new Date(invoice.invoiceDate) : null;
 
                                         return (
                                             <tr
@@ -891,18 +1033,24 @@ export default function InvoiceList() {
                                                 className="rounded-lg bg-muted/30 text-foreground shadow-sm transition hover:bg-muted/50"
                                             >
                                                 <td className="px-4 py-3 font-medium">{formattedNumber}</td>
-                                                <td className="px-4 py-3" title={dateTimeFormatter.format(new Date(invoice.submissionDate))}>
+                                                <td className="px-4 py-3">
                                                     <div className="flex flex-col">
-                                                        <span>{dateFormatter.format(new Date(invoice.submissionDate))}</span>
+                                                        <span>
+                                                            {submissionDate ? dateFormatter.format(submissionDate) : '-'}
+                                                        </span>
                                                         <span className="text-xs text-muted-foreground">
-                                                            {new Date(invoice.submissionDate).toLocaleTimeString('id-ID', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                            })}
+                                                            {submissionDate
+                                                                ? submissionDate.toLocaleTimeString('id-ID', {
+                                                                      hour: '2-digit',
+                                                                      minute: '2-digit',
+                                                                  })
+                                                                : '-'}
                                                         </span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3">{dateFormatter.format(new Date(invoice.invoiceDate))}</td>
+                                                <td className="px-4 py-3">
+                                                    {invoiceDateValue ? dateFormatter.format(invoiceDateValue) : '-'}
+                                                </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex flex-col gap-1">
                                                         <span className="font-medium">{invoice.activityName}</span>
@@ -1004,11 +1152,18 @@ export default function InvoiceList() {
                                 const totalAmount = getTotalInvoiceAmount(selectedInvoice);
                                 const outstanding = getOutstandingAmount(selectedInvoice);
 
+                                const submissionDate = selectedInvoice.submissionDate
+                                    ? new Date(selectedInvoice.submissionDate)
+                                    : null;
+                                const invoiceDateValue = selectedInvoice.invoiceDate
+                                    ? new Date(selectedInvoice.invoiceDate)
+                                    : null;
+
                                 const vatLabel =
                                     selectedInvoice.vatOption === 'include'
                                         ? 'Include PPN 11%'
                                         : selectedInvoice.vatOption === 'exclude'
-                                        ? 'Exclude PPN'
+                                            ? 'Exclude PPN'
                                         : 'Tanpa PPN';
 
                                 return (
@@ -1027,13 +1182,17 @@ export default function InvoiceList() {
                                             <div className="space-y-1">
                                                 <p className="text-xs text-muted-foreground">Tanggal Pengajuan</p>
                                                 <p className="font-semibold">
-                                                    {dateTimeFormatter.format(new Date(selectedInvoice.submissionDate))}
+                                                    {submissionDate
+                                                        ? dateTimeFormatter.format(submissionDate)
+                                                        : '-'}
                                                 </p>
                                             </div>
                                             <div className="space-y-1">
                                                 <p className="text-xs text-muted-foreground">Tanggal Invoice</p>
                                                 <p className="font-semibold">
-                                                    {dateTimeFormatter.format(new Date(selectedInvoice.invoiceDate))}
+                                                    {invoiceDateValue
+                                                        ? dateTimeFormatter.format(invoiceDateValue)
+                                                        : '-'}
                                                 </p>
                                             </div>
                                             <div className="space-y-1">
@@ -1210,7 +1369,7 @@ export default function InvoiceList() {
                                                     <div key={`${selectedInvoice.id}-${event.label}`} className="rounded-md border border-border/60 p-3">
                                                         <p className="text-sm font-semibold">{event.label}</p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {dateTimeFormatter.format(new Date(event.date))}
+                                                            {event.date ? dateTimeFormatter.format(new Date(event.date)) : '-'}
                                                         </p>
                                                         {event.note && (
                                                             <p className="mt-1 text-xs text-muted-foreground">Catatan: {event.note}</p>
